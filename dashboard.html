@@ -1,0 +1,889 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PowerTrack — Dashboard ภาพรวมทีม</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --navy:   #0B1120;
+  --navy-2: #131D30;
+  --navy-3: #1C2B44;
+  --navy-4: #243352;
+  --amber:  #F59E0B;
+  --amber-d:#D97706;
+  --amber-l:#FEF3C7;
+  --sky:    #38BDF8;
+  --teal:   #2DD4BF;
+  --violet: #A78BFA;
+  --rose:   #FB7185;
+  --emerald:#34D399;
+  --slate:  #64748B;
+  --line:   #E2E8F0;
+  --bg:     #F0F4F8;
+  --card:   #FFFFFF;
+}
+
+body {
+  font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+  background: var(--bg);
+  color: #1E293B;
+  height: 100vh;
+  overflow: hidden;
+  font-size: 13px;
+}
+
+.shell { display: flex; height: 100vh; }
+
+/* ── SIDEBAR ── */
+.sidebar {
+  width: 210px; min-width: 210px;
+  background: var(--navy);
+  display: flex; flex-direction: column;
+  overflow: hidden;
+}
+.sb-brand {
+  display: flex; align-items: center; gap: 10px;
+  padding: 18px 16px 14px;
+  border-bottom: 1px solid var(--navy-3);
+}
+.sb-logo {
+  width: 32px; height: 32px;
+  background: var(--amber); border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 17px;
+}
+.sb-name { font-size: 14px; font-weight: 800; color: #fff; }
+.sb-sub  { font-size: 10px; color: #4B6280; margin-top: 1px; }
+
+.sb-sec { padding: 14px 12px 6px; font-size: 10px; font-weight: 700; letter-spacing: .1em; color: #3D5470; text-transform: uppercase; }
+
+.sb-nav {
+  display: flex; align-items: center; gap: 10px;
+  padding: 9px 12px; border-radius: 8px; margin: 1px 8px;
+  cursor: pointer; color: #607A99; font-size: 13px; font-weight: 500;
+  transition: all .15s; border: none; background: none;
+  width: calc(100% - 16px); text-align: left;
+  text-decoration: none;
+}
+.sb-nav:hover { background: var(--navy-3); color: #9BB4D4; }
+.sb-nav.active { background: var(--navy-3); color: var(--amber); }
+.sb-nav .ni { font-size: 15px; width: 20px; text-align: center; }
+
+.sb-divider { border: none; border-top: 1px solid var(--navy-3); margin: 10px 16px; }
+
+/* period selector */
+.sb-period {
+  margin: 10px 12px 0;
+  background: var(--navy-3);
+  border-radius: 10px; padding: 12px;
+}
+.sb-period-lbl { font-size: 10px; color: #4B6280; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; margin-bottom: 8px; }
+.period-opts { display: flex; flex-direction: column; gap: 3px; }
+.period-btn {
+  padding: 7px 10px; border-radius: 7px;
+  font-size: 12px; font-weight: 600;
+  color: #607A99; cursor: pointer;
+  border: none; background: none;
+  text-align: left; transition: all .15s;
+}
+.period-btn:hover { background: var(--navy-4); color: #9BB4D4; }
+.period-btn.sel { background: var(--amber); color: var(--navy); }
+
+.sb-user {
+  margin-top: auto; padding: 12px 12px 16px;
+  display: flex; align-items: center; gap: 10px;
+  border-top: 1px solid var(--navy-3);
+}
+.sb-av {
+  width: 32px; height: 32px; border-radius: 50%;
+  background: var(--navy-4);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px; flex-shrink: 0;
+}
+.sb-uname { font-size: 12px; font-weight: 700; color: #9BB4D4; }
+.sb-urole { font-size: 10px; color: #4B6280; }
+
+/* ── MAIN ── */
+.main {
+  flex: 1; overflow-y: auto;
+  display: flex; flex-direction: column;
+}
+
+/* Top bar */
+.topbar {
+  background: var(--navy);
+  padding: 14px 24px;
+  display: flex; align-items: center; justify-content: space-between;
+  flex-shrink: 0;
+}
+.topbar-title { font-size: 16px; font-weight: 700; color: #fff; }
+.topbar-sub   { font-size: 11px; color: #4B6280; margin-top: 2px; }
+.topbar-right { display: flex; align-items: center; gap: 10px; }
+.period-badge {
+  background: var(--navy-3);
+  color: var(--amber);
+  padding: 5px 12px; border-radius: 6px;
+  font-size: 11px; font-weight: 700;
+}
+.btn-export {
+  background: var(--amber); border: none;
+  border-radius: 7px; padding: 7px 14px;
+  font-size: 12px; font-weight: 800;
+  color: var(--navy); cursor: pointer;
+  transition: all .15s;
+}
+.btn-export:hover { background: var(--amber-d); color: #fff; }
+
+/* Content */
+.content { padding: 20px 24px; display: flex; flex-direction: column; gap: 20px; }
+
+/* ── KPI CARDS ── */
+.kpi-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+
+.kpi-card {
+  background: var(--card);
+  border-radius: 12px;
+  padding: 18px;
+  border: 1px solid var(--line);
+  position: relative;
+  overflow: hidden;
+}
+.kpi-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+}
+.kpi-card.k-amber::before { background: var(--amber); }
+.kpi-card.k-sky::before   { background: var(--sky); }
+.kpi-card.k-teal::before  { background: var(--teal); }
+.kpi-card.k-violet::before{ background: var(--violet); }
+
+.kpi-top { display: flex; align-items: flex-start; justify-content: space-between; }
+.kpi-ico {
+  width: 38px; height: 38px; border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px;
+}
+.kpi-ico.k-amber { background: #FEF3C7; }
+.kpi-ico.k-sky   { background: #E0F2FE; }
+.kpi-ico.k-teal  { background: #CCFBF1; }
+.kpi-ico.k-violet{ background: #EDE9FE; }
+
+.kpi-delta {
+  font-size: 11px; font-weight: 700;
+  padding: 3px 7px; border-radius: 20px;
+}
+.delta-up   { background: #DCFCE7; color: #15803D; }
+.delta-down { background: #FEE2E2; color: #BE123C; }
+
+.kpi-val {
+  font-size: 30px; font-weight: 800;
+  color: #0F172A; margin-top: 12px;
+  line-height: 1;
+}
+.kpi-val span { font-size: 14px; font-weight: 600; color: var(--slate); margin-left: 3px; }
+.kpi-lbl { font-size: 12px; color: var(--slate); margin-top: 5px; font-weight: 500; }
+.kpi-sub { font-size: 10px; color: #94A3B8; margin-top: 3px; }
+
+/* ── CHART ROW ── */
+.chart-row { display: grid; grid-template-columns: 1fr 380px; gap: 14px; }
+
+.card {
+  background: var(--card);
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  padding: 18px;
+}
+.card-title {
+  font-size: 13px; font-weight: 800;
+  color: #0F172A; margin-bottom: 4px;
+}
+.card-sub { font-size: 11px; color: var(--slate); margin-bottom: 16px; }
+
+/* Project bars */
+.proj-bars { display: flex; flex-direction: column; gap: 14px; }
+
+.proj-bar-row { display: flex; flex-direction: column; gap: 6px; }
+.proj-bar-hdr { display: flex; justify-content: space-between; align-items: center; }
+.proj-name { font-size: 12px; font-weight: 700; color: #1E293B; display: flex; align-items: center; gap: 7px; }
+.proj-dot  { width: 8px; height: 8px; border-radius: 2px; flex-shrink: 0; }
+.proj-meta { font-size: 11px; color: var(--slate); }
+.proj-hours{ font-size: 13px; font-weight: 800; color: #0F172A; }
+
+.bar-track {
+  height: 8px; background: var(--bg);
+  border-radius: 4px; overflow: hidden;
+  position: relative;
+}
+.bar-fill {
+  height: 100%; border-radius: 4px;
+  transition: width .8s cubic-bezier(.2,1,.4,1);
+}
+.bar-members {
+  display: flex; gap: 4px; align-items: center;
+  margin-top: 3px;
+}
+.member-chip {
+  font-size: 10px; color: var(--slate);
+  background: var(--bg); border-radius: 4px;
+  padding: 1px 6px;
+}
+
+/* Donut chart */
+.donut-wrap {
+  display: flex; flex-direction: column; align-items: center; gap: 16px;
+}
+.donut-svg { flex-shrink: 0; }
+.donut-center {
+  position: absolute;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  pointer-events: none;
+}
+.donut-container { position: relative; display: inline-flex; align-items: center; justify-content: center; }
+.donut-c-val { font-size: 28px; font-weight: 800; color: #0F172A; line-height: 1; }
+.donut-c-lbl { font-size: 10px; color: var(--slate); margin-top: 2px; }
+
+.donut-legend { width: 100%; display: flex; flex-direction: column; gap: 8px; }
+.leg-row { display: flex; align-items: center; gap: 8px; }
+.leg-swatch { width: 10px; height: 10px; border-radius: 2px; flex-shrink: 0; }
+.leg-name { flex: 1; font-size: 11px; color: #334155; font-weight: 500; }
+.leg-pct  { font-size: 11px; font-weight: 800; color: #0F172A; }
+.leg-h    { font-size: 10px; color: var(--slate); min-width: 32px; text-align: right; }
+
+/* ── TEAM ROW ── */
+.team-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+
+.member-card {
+  background: var(--card);
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  padding: 16px;
+  transition: all .15s;
+}
+.member-card:hover { border-color: var(--amber); transform: translateY(-2px); box-shadow: 0 4px 16px rgba(0,0,0,.06); }
+
+.mc-top { display: flex; align-items: center; gap: 11px; margin-bottom: 14px; }
+.mc-avatar {
+  width: 40px; height: 40px; border-radius: 12px;
+  background: var(--navy); color: var(--amber);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px; font-weight: 800; flex-shrink: 0;
+}
+.mc-name { font-size: 13px; font-weight: 700; color: #0F172A; }
+.mc-team { font-size: 10px; color: var(--slate); margin-top: 1px; }
+
+.mc-hours-row { display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 10px; }
+.mc-hours-val {
+  font-size: 28px; font-weight: 800; color: #0F172A; line-height: 1;
+}
+.mc-hours-val span { font-size: 13px; font-weight: 500; color: var(--slate); }
+.mc-week { text-align: right; }
+.mc-week-val { font-size: 14px; font-weight: 700; color: var(--amber-d); }
+.mc-week-lbl { font-size: 10px; color: var(--slate); }
+
+/* mini stacked bar */
+.mini-stack {
+  height: 6px; border-radius: 3px;
+  overflow: hidden;
+  display: flex;
+  margin-bottom: 8px;
+}
+.mini-seg { height: 100%; transition: width .6s; }
+
+.mc-proj { display: flex; flex-wrap: wrap; gap: 4px; }
+.mc-proj-tag {
+  font-size: 10px; font-weight: 600;
+  padding: 2px 7px; border-radius: 4px;
+  display: flex; align-items: center; gap: 3px;
+}
+.mc-status {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-size: 10px; font-weight: 700;
+  padding: 3px 8px; border-radius: 20px;
+  margin-top: 8px;
+}
+.mc-status.ok    { background: #DCFCE7; color: #15803D; }
+.mc-status.warn  { background: #FEF3C7; color: #B45309; }
+.mc-status.low   { background: #FEE2E2; color: #BE123C; }
+
+/* ── WEEKLY TREND ── */
+.trend-card { background: var(--card); border-radius: 12px; border: 1px solid var(--line); padding: 18px; }
+.trend-chart { display: flex; align-items: flex-end; gap: 0; height: 120px; margin-top: 16px; padding: 0 8px; }
+.trend-day { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px; height: 100%; justify-content: flex-end; }
+.trend-bar-wrap { width: 100%; display: flex; flex-direction: column; align-items: center; gap: 3px; flex: 1; justify-content: flex-end; }
+.trend-bar-stack { width: 60%; border-radius: 5px 5px 0 0; overflow: hidden; display: flex; flex-direction: column-reverse; }
+.trend-seg { width: 100%; transition: height .7s cubic-bezier(.2,1,.4,1); }
+.trend-val { font-size: 11px; font-weight: 800; color: #0F172A; }
+.trend-lbl { font-size: 10px; color: var(--slate); font-weight: 600; }
+.trend-divider { width: 1px; height: 120px; background: var(--line); flex-shrink: 0; }
+
+.trend-legend { display: flex; gap: 16px; margin-top: 12px; padding-left: 8px; }
+.tl-item { display: flex; align-items: center; gap: 5px; font-size: 10px; color: var(--slate); }
+.tl-dot { width: 8px; height: 8px; border-radius: 2px; }
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 2px; }
+</style>
+</head>
+<body>
+
+<div class="shell">
+
+  <!-- ── SIDEBAR ── -->
+  <aside class="sidebar">
+    <div class="sb-brand">
+      <div class="sb-logo">⚡</div>
+      <div>
+        <div class="sb-name">PowerTrack</div>
+        <div class="sb-sub">UPS Engineering</div>
+      </div>
+    </div>
+
+    <div class="sb-sec">เมนูหลัก</div>
+    <a href="prototype.html" class="sb-nav"><span class="ni">📅</span> ปฏิทินเวลางาน</a>
+    <a href="dashboard.html" class="sb-nav active"><span class="ni">📊</span> รายงานของฉัน</a>
+    <a href="projects.html" class="sb-nav"><span class="ni">🔋</span> โครงการ UPS</a>
+    <a href="#" class="sb-nav"><span class="ni">⚙️</span> ตั้งค่า</a>
+
+    <hr class="sb-divider">
+
+    <div class="sb-period">
+      <div class="sb-period-lbl">ช่วงเวลา</div>
+      <div class="period-opts">
+        <button class="period-btn" onclick="setPeriod(this)">สัปดาห์นี้</button>
+        <button class="period-btn sel" onclick="setPeriod(this)">เดือนนี้ (เม.ย. 2026)</button>
+        <button class="period-btn" onclick="setPeriod(this)">ไตรมาส Q2</button>
+        <button class="period-btn" onclick="setPeriod(this)">ปี 2026</button>
+      </div>
+    </div>
+
+    <div class="sb-user" style="margin-top:auto">
+      <div class="sb-av">👷</div>
+      <div>
+        <div class="sb-uname">ทีมวิศวกรไฟฟ้า</div>
+        <div class="sb-urole">Power Electronics</div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ── MAIN ── -->
+  <main class="main">
+
+    <div class="topbar">
+      <div>
+        <div class="topbar-title">📊 Dashboard ภาพรวมทีม</div>
+        <div class="topbar-sub">ทีมวิศวกรไฟฟ้า — UPS Manufacturing | อัปเดตล่าสุด 26 เม.ย. 2026</div>
+      </div>
+      <div class="topbar-right">
+        <div class="period-badge" id="periodBadge">⏱ เมษายน 2026</div>
+        <button class="btn-export">↓ Export</button>
+      </div>
+    </div>
+
+    <div class="content">
+
+      <!-- ── KPI CARDS ── -->
+      <div class="kpi-row">
+
+        <div class="kpi-card k-amber">
+          <div class="kpi-top">
+            <div class="kpi-ico k-amber">⏱</div>
+            <div class="kpi-delta delta-up">↑ 6.2%</div>
+          </div>
+          <div class="kpi-val">847<span>ชั่วโมง</span></div>
+          <div class="kpi-lbl">ชั่วโมงรวมทีมเดือนนี้</div>
+          <div class="kpi-sub">เดือนที่แล้ว 797h</div>
+        </div>
+
+        <div class="kpi-card k-sky">
+          <div class="kpi-top">
+            <div class="kpi-ico k-sky">👥</div>
+            <div class="kpi-delta delta-up">ครบทีม</div>
+          </div>
+          <div class="kpi-val">6<span>คน</span></div>
+          <div class="kpi-lbl">สมาชิกที่บันทึกเวลา</div>
+          <div class="kpi-sub">เป้าหมาย 6 / 6 คน</div>
+        </div>
+
+        <div class="kpi-card k-teal">
+          <div class="kpi-top">
+            <div class="kpi-ico k-teal">🔋</div>
+            <div class="kpi-delta delta-up">+1</div>
+          </div>
+          <div class="kpi-val">5<span>โครงการ</span></div>
+          <div class="kpi-lbl">โครงการที่แอคทีฟ</div>
+          <div class="kpi-sub">รวม BAU Line support</div>
+        </div>
+
+        <div class="kpi-card k-violet">
+          <div class="kpi-top">
+            <div class="kpi-ico k-violet">📈</div>
+            <div class="kpi-delta delta-down">↓ 0.3h</div>
+          </div>
+          <div class="kpi-val">7.8<span>h/วัน</span></div>
+          <div class="kpi-lbl">เฉลี่ยต่อคนต่อวัน</div>
+          <div class="kpi-sub">เป้าหมาย 8h/วัน</div>
+        </div>
+
+      </div>
+
+      <!-- ── CHART ROW ── -->
+      <div class="chart-row">
+
+        <!-- Project bars -->
+        <div class="card">
+          <div class="card-title">⚡ ชั่วโมงแยกตามโครงการ</div>
+          <div class="card-sub">เม.ย. 2026 — รวมทุกสมาชิกทีม</div>
+
+          <div class="proj-bars">
+
+            <div class="proj-bar-row">
+              <div class="proj-bar-hdr">
+                <div class="proj-name">
+                  <div class="proj-dot" style="background:#F59E0B"></div>
+                  UPS-1000K Shutdown SFF
+                </div>
+                <div style="display:flex;align-items:center;gap:12px">
+                  <div class="proj-meta">28.9% · 4 คน</div>
+                  <div class="proj-hours">245h</div>
+                </div>
+              </div>
+              <div class="bar-track"><div class="bar-fill" style="width:100%;background:#F59E0B;opacity:.9"></div></div>
+              <div class="bar-members">
+                <div class="member-chip">ธีรพงษ์</div><div class="member-chip">กัญญา</div>
+                <div class="member-chip">จันทิมา</div><div class="member-chip">วรวิทย์</div>
+              </div>
+            </div>
+
+            <div class="proj-bar-row">
+              <div class="proj-bar-hdr">
+                <div class="proj-name">
+                  <div class="proj-dot" style="background:#38BDF8"></div>
+                  Line A3 BAU Support
+                </div>
+                <div style="display:flex;align-items:center;gap:12px">
+                  <div class="proj-meta">19.7% · 3 คน</div>
+                  <div class="proj-hours">167h</div>
+                </div>
+              </div>
+              <div class="bar-track"><div class="bar-fill" style="width:68.2%;background:#38BDF8"></div></div>
+              <div class="bar-members">
+                <div class="member-chip">วรวิทย์</div><div class="member-chip">ณัฐพล</div>
+                <div class="member-chip">กัญญา</div>
+              </div>
+            </div>
+
+            <div class="proj-bar-row">
+              <div class="proj-bar-hdr">
+                <div class="proj-name">
+                  <div class="proj-dot" style="background:#2DD4BF"></div>
+                  SFF-3kVA Load Test
+                </div>
+                <div style="display:flex;align-items:center;gap:12px">
+                  <div class="proj-meta">21.2% · 3 คน</div>
+                  <div class="proj-hours">180h</div>
+                </div>
+              </div>
+              <div class="bar-track"><div class="bar-fill" style="width:73.5%;background:#2DD4BF"></div></div>
+              <div class="bar-members">
+                <div class="member-chip">สุภาวดี</div><div class="member-chip">ณัฐพล</div>
+                <div class="member-chip">จันทิมา</div>
+              </div>
+            </div>
+
+            <div class="proj-bar-row">
+              <div class="proj-bar-hdr">
+                <div class="proj-name">
+                  <div class="proj-dot" style="background:#A78BFA"></div>
+                  UPS-2000K New Dev
+                </div>
+                <div style="display:flex;align-items:center;gap:12px">
+                  <div class="proj-meta">18.9% · 3 คน</div>
+                  <div class="proj-hours">160h</div>
+                </div>
+              </div>
+              <div class="bar-track"><div class="bar-fill" style="width:65.3%;background:#A78BFA"></div></div>
+              <div class="bar-members">
+                <div class="member-chip">สุภาวดี</div><div class="member-chip">กัญญา</div>
+                <div class="member-chip">ธีรพงษ์</div>
+              </div>
+            </div>
+
+            <div class="proj-bar-row">
+              <div class="proj-bar-hdr">
+                <div class="proj-name">
+                  <div class="proj-dot" style="background:#FB7185"></div>
+                  EMC Certification
+                </div>
+                <div style="display:flex;align-items:center;gap:12px">
+                  <div class="proj-meta">11.2% · 2 คน</div>
+                  <div class="proj-hours">95h</div>
+                </div>
+              </div>
+              <div class="bar-track"><div class="bar-fill" style="width:38.8%;background:#FB7185"></div></div>
+              <div class="bar-members">
+                <div class="member-chip">จันทิมา</div><div class="member-chip">ธีรพงษ์</div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Donut chart -->
+        <div class="card">
+          <div class="card-title">🔬 ชั่วโมงแยกตามประเภทงาน</div>
+          <div class="card-sub">847h รวมทั้งเดือน</div>
+
+          <div class="donut-wrap">
+            <div class="donut-container">
+              <svg class="donut-svg" width="180" height="180" viewBox="0 0 180 180">
+                <!-- background track -->
+                <circle cx="90" cy="90" r="70" fill="none" stroke="#F1F5F9" stroke-width="22"/>
+                <!-- Seg 1: ทดสอบ 35% amber -->
+                <circle cx="90" cy="90" r="70" fill="none"
+                  stroke="#F59E0B" stroke-width="22"
+                  stroke-dasharray="153.94 285.88"
+                  stroke-dashoffset="109.95"
+                  stroke-linecap="butt"/>
+                <!-- Seg 2: ผลิต 25% teal -->
+                <circle cx="90" cy="90" r="70" fill="none"
+                  stroke="#2DD4BF" stroke-width="22"
+                  stroke-dasharray="109.95 329.87"
+                  stroke-dashoffset="-43.99"
+                  stroke-linecap="butt"/>
+                <!-- Seg 3: ออกแบบ 20% sky -->
+                <circle cx="90" cy="90" r="70" fill="none"
+                  stroke="#38BDF8" stroke-width="22"
+                  stroke-dasharray="87.96 351.86"
+                  stroke-dashoffset="-153.94"
+                  stroke-linecap="butt"/>
+                <!-- Seg 4: วิเคราะห์ 12% violet -->
+                <circle cx="90" cy="90" r="70" fill="none"
+                  stroke="#A78BFA" stroke-width="22"
+                  stroke-dasharray="52.78 387.04"
+                  stroke-dashoffset="-241.90"
+                  stroke-linecap="butt"/>
+                <!-- Seg 5: อื่นๆ 8% gray -->
+                <circle cx="90" cy="90" r="70" fill="none"
+                  stroke="#CBD5E1" stroke-width="22"
+                  stroke-dasharray="35.18 404.64"
+                  stroke-dashoffset="-294.68"
+                  stroke-linecap="butt"/>
+              </svg>
+              <div class="donut-center" style="position:absolute">
+                <div class="donut-c-val">847</div>
+                <div class="donut-c-lbl">ชั่วโมง</div>
+              </div>
+            </div>
+
+            <div class="donut-legend">
+              <div class="leg-row">
+                <div class="leg-swatch" style="background:#F59E0B"></div>
+                <div class="leg-name">ทดสอบและยืนยัน</div>
+                <div class="leg-pct">35%</div>
+                <div class="leg-h">296h</div>
+              </div>
+              <div class="leg-row">
+                <div class="leg-swatch" style="background:#2DD4BF"></div>
+                <div class="leg-name">สนับสนุนการผลิต</div>
+                <div class="leg-pct">25%</div>
+                <div class="leg-h">212h</div>
+              </div>
+              <div class="leg-row">
+                <div class="leg-swatch" style="background:#38BDF8"></div>
+                <div class="leg-name">ออกแบบไฟฟ้า</div>
+                <div class="leg-pct">20%</div>
+                <div class="leg-h">169h</div>
+              </div>
+              <div class="leg-row">
+                <div class="leg-swatch" style="background:#A78BFA"></div>
+                <div class="leg-name">วิเคราะห์ความต้องการ</div>
+                <div class="leg-pct">12%</div>
+                <div class="leg-h">102h</div>
+              </div>
+              <div class="leg-row">
+                <div class="leg-swatch" style="background:#CBD5E1"></div>
+                <div class="leg-name">งานสนับสนุนอื่นๆ</div>
+                <div class="leg-pct">8%</div>
+                <div class="leg-h">68h</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ── TEAM ROW ── -->
+      <div>
+        <div style="font-size:13px; font-weight:800; color:#0F172A; margin-bottom:12px">
+          👥 ภาพรวมรายบุคคล — เม.ย. 2026
+        </div>
+        <div class="team-row">
+
+          <div class="member-card">
+            <div class="mc-top">
+              <div class="mc-avatar">ธ</div>
+              <div>
+                <div class="mc-name">ธีรพงษ์ วิเชียร</div>
+                <div class="mc-team">Power Electronics</div>
+              </div>
+            </div>
+            <div class="mc-hours-row">
+              <div class="mc-hours-val">186<span>h</span></div>
+              <div class="mc-week"><div class="mc-week-val">42h</div><div class="mc-week-lbl">สัปดาห์นี้</div></div>
+            </div>
+            <div class="mini-stack">
+              <div class="mini-seg" style="width:52%;background:#F59E0B;height:6px"></div>
+              <div class="mini-seg" style="width:26%;background:#FB7185;height:6px"></div>
+              <div class="mini-seg" style="width:22%;background:#A78BFA;height:6px"></div>
+            </div>
+            <div class="mc-proj">
+              <div class="mc-proj-tag" style="background:#FEF3C7;color:#B45309">UPS-1000K 52%</div>
+              <div class="mc-proj-tag" style="background:#FEE2E2;color:#BE123C">EMC 26%</div>
+              <div class="mc-proj-tag" style="background:#EDE9FE;color:#6D28D9">UPS-2000K 22%</div>
+            </div>
+            <div class="mc-status ok">✅ ปกติ</div>
+          </div>
+
+          <div class="member-card">
+            <div class="mc-top">
+              <div class="mc-avatar">ส</div>
+              <div>
+                <div class="mc-name">สุภาวดี แก้วสว่าง</div>
+                <div class="mc-team">Battery & Storage</div>
+              </div>
+            </div>
+            <div class="mc-hours-row">
+              <div class="mc-hours-val">162<span>h</span></div>
+              <div class="mc-week"><div class="mc-week-val">38h</div><div class="mc-week-lbl">สัปดาห์นี้</div></div>
+            </div>
+            <div class="mini-stack">
+              <div class="mini-seg" style="width:60%;background:#2DD4BF;height:6px"></div>
+              <div class="mini-seg" style="width:40%;background:#A78BFA;height:6px"></div>
+            </div>
+            <div class="mc-proj">
+              <div class="mc-proj-tag" style="background:#CCFBF1;color:#0F766E">SFF-3kVA 60%</div>
+              <div class="mc-proj-tag" style="background:#EDE9FE;color:#6D28D9">UPS-2000K 40%</div>
+            </div>
+            <div class="mc-status ok">✅ ปกติ</div>
+          </div>
+
+          <div class="member-card">
+            <div class="mc-top">
+              <div class="mc-avatar">ณ</div>
+              <div>
+                <div class="mc-name">ณัฐพล ทองดี</div>
+                <div class="mc-team">Control & Firmware</div>
+              </div>
+            </div>
+            <div class="mc-hours-row">
+              <div class="mc-hours-val">145<span>h</span></div>
+              <div class="mc-week"><div class="mc-week-val">35h</div><div class="mc-week-lbl">สัปดาห์นี้</div></div>
+            </div>
+            <div class="mini-stack">
+              <div class="mini-seg" style="width:55%;background:#38BDF8;height:6px"></div>
+              <div class="mini-seg" style="width:45%;background:#2DD4BF;height:6px"></div>
+            </div>
+            <div class="mc-proj">
+              <div class="mc-proj-tag" style="background:#E0F2FE;color:#0369A1">Line A3 55%</div>
+              <div class="mc-proj-tag" style="background:#CCFBF1;color:#0F766E">SFF-3kVA 45%</div>
+            </div>
+            <div class="mc-status warn">⚠ ต่ำกว่าเป้า</div>
+          </div>
+
+          <div class="member-card">
+            <div class="mc-top">
+              <div class="mc-avatar">จ</div>
+              <div>
+                <div class="mc-name">จันทิมา ใจซื่อ</div>
+                <div class="mc-team">Quality & Reliability</div>
+              </div>
+            </div>
+            <div class="mc-hours-row">
+              <div class="mc-hours-val">158<span>h</span></div>
+              <div class="mc-week"><div class="mc-week-val">40h</div><div class="mc-week-lbl">สัปดาห์นี้</div></div>
+            </div>
+            <div class="mini-stack">
+              <div class="mini-seg" style="width:45%;background:#F59E0B;height:6px"></div>
+              <div class="mini-seg" style="width:35%;background:#FB7185;height:6px"></div>
+              <div class="mini-seg" style="width:20%;background:#2DD4BF;height:6px"></div>
+            </div>
+            <div class="mc-proj">
+              <div class="mc-proj-tag" style="background:#FEF3C7;color:#B45309">UPS-1000K 45%</div>
+              <div class="mc-proj-tag" style="background:#FEE2E2;color:#BE123C">EMC 35%</div>
+              <div class="mc-proj-tag" style="background:#CCFBF1;color:#0F766E">SFF 20%</div>
+            </div>
+            <div class="mc-status ok">✅ ปกติ</div>
+          </div>
+
+          <div class="member-card">
+            <div class="mc-top">
+              <div class="mc-avatar">ว</div>
+              <div>
+                <div class="mc-name">วรวิทย์ ศรีสมบัติ</div>
+                <div class="mc-team">Manufacturing Eng.</div>
+              </div>
+            </div>
+            <div class="mc-hours-row">
+              <div class="mc-hours-val">152<span>h</span></div>
+              <div class="mc-week"><div class="mc-week-val">36h</div><div class="mc-week-lbl">สัปดาห์นี้</div></div>
+            </div>
+            <div class="mini-stack">
+              <div class="mini-seg" style="width:70%;background:#38BDF8;height:6px"></div>
+              <div class="mini-seg" style="width:30%;background:#F59E0B;height:6px"></div>
+            </div>
+            <div class="mc-proj">
+              <div class="mc-proj-tag" style="background:#E0F2FE;color:#0369A1">Line A3 70%</div>
+              <div class="mc-proj-tag" style="background:#FEF3C7;color:#B45309">UPS-1000K 30%</div>
+            </div>
+            <div class="mc-status ok">✅ ปกติ</div>
+          </div>
+
+          <div class="member-card">
+            <div class="mc-top">
+              <div class="mc-avatar">ก</div>
+              <div>
+                <div class="mc-name">กัญญา ดีงาม</div>
+                <div class="mc-team">Power Electronics</div>
+              </div>
+            </div>
+            <div class="mc-hours-row">
+              <div class="mc-hours-val">44<span>h</span></div>
+              <div class="mc-week"><div class="mc-week-val" style="color:#FB7185">10h</div><div class="mc-week-lbl">สัปดาห์นี้</div></div>
+            </div>
+            <div class="mini-stack">
+              <div class="mini-seg" style="width:55%;background:#F59E0B;height:6px"></div>
+              <div class="mini-seg" style="width:25%;background:#38BDF8;height:6px"></div>
+              <div class="mini-seg" style="width:20%;background:#A78BFA;height:6px"></div>
+            </div>
+            <div class="mc-proj">
+              <div class="mc-proj-tag" style="background:#FEF3C7;color:#B45309">UPS-1000K</div>
+              <div class="mc-proj-tag" style="background:#E0F2FE;color:#0369A1">Line A3</div>
+            </div>
+            <div class="mc-status low">🔴 ลาอยู่ / ข้อมูลน้อย</div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- ── WEEKLY TREND ── -->
+      <div class="trend-card">
+        <div style="display:flex; justify-content:space-between; align-items:flex-start">
+          <div>
+            <div class="card-title">📅 ชั่วโมงรวมทีมรายวัน — สัปดาห์นี้ (21–26 เม.ย.)</div>
+            <div class="card-sub">แสดงผลแบ่งตามประเภทงาน</div>
+          </div>
+          <div style="font-size:11px; color:var(--slate); text-align:right">
+            รวมสัปดาห์นี้<br>
+            <span style="font-size:20px; font-weight:800; color:#0F172A">223h</span>
+          </div>
+        </div>
+
+        <div class="trend-chart">
+
+          <!-- Mon -->
+          <div class="trend-day">
+            <div class="trend-bar-wrap">
+              <div class="trend-val">45h</div>
+              <div class="trend-bar-stack" style="height:90px">
+                <div class="trend-seg" style="height:56%;background:#F59E0B"></div>
+                <div class="trend-seg" style="height:22%;background:#2DD4BF"></div>
+                <div class="trend-seg" style="height:22%;background:#38BDF8"></div>
+              </div>
+            </div>
+            <div class="trend-lbl">จ</div>
+          </div>
+          <div class="trend-divider"></div>
+
+          <!-- Tue -->
+          <div class="trend-day">
+            <div class="trend-bar-wrap">
+              <div class="trend-val">52h</div>
+              <div class="trend-bar-stack" style="height:90px">
+                <div class="trend-seg" style="height:50%;background:#F59E0B"></div>
+                <div class="trend-seg" style="height:30%;background:#2DD4BF"></div>
+                <div class="trend-seg" style="height:20%;background:#A78BFA"></div>
+              </div>
+            </div>
+            <div class="trend-lbl">อ</div>
+          </div>
+          <div class="trend-divider"></div>
+
+          <!-- Wed -->
+          <div class="trend-day">
+            <div class="trend-bar-wrap">
+              <div class="trend-val">38h</div>
+              <div class="trend-bar-stack" style="height:90px">
+                <div class="trend-seg" style="height:45%;background:#38BDF8"></div>
+                <div class="trend-seg" style="height:35%;background:#2DD4BF"></div>
+                <div class="trend-seg" style="height:20%;background:#FB7185"></div>
+              </div>
+            </div>
+            <div class="trend-lbl">พ</div>
+          </div>
+          <div class="trend-divider"></div>
+
+          <!-- Thu -->
+          <div class="trend-day">
+            <div class="trend-bar-wrap">
+              <div class="trend-val">48h</div>
+              <div class="trend-bar-stack" style="height:90px">
+                <div class="trend-seg" style="height:60%;background:#F59E0B"></div>
+                <div class="trend-seg" style="height:25%;background:#38BDF8"></div>
+                <div class="trend-seg" style="height:15%;background:#A78BFA"></div>
+              </div>
+            </div>
+            <div class="trend-lbl">พฤ</div>
+          </div>
+          <div class="trend-divider"></div>
+
+          <!-- Fri -->
+          <div class="trend-day">
+            <div class="trend-bar-wrap">
+              <div class="trend-val">40h</div>
+              <div class="trend-bar-stack" style="height:90px">
+                <div class="trend-seg" style="height:42%;background:#F59E0B"></div>
+                <div class="trend-seg" style="height:33%;background:#2DD4BF"></div>
+                <div class="trend-seg" style="height:25%;background:#38BDF8"></div>
+              </div>
+            </div>
+            <div class="trend-lbl">ศ ●</div>
+          </div>
+
+        </div>
+
+        <div class="trend-legend">
+          <div class="tl-item"><div class="tl-dot" style="background:#F59E0B"></div>ทดสอบและยืนยัน</div>
+          <div class="tl-item"><div class="tl-dot" style="background:#2DD4BF"></div>สนับสนุนการผลิต</div>
+          <div class="tl-item"><div class="tl-dot" style="background:#38BDF8"></div>ออกแบบไฟฟ้า</div>
+          <div class="tl-item"><div class="tl-dot" style="background:#A78BFA"></div>วิเคราะห์ความต้องการ</div>
+          <div class="tl-item"><div class="tl-dot" style="background:#FB7185"></div>อื่นๆ</div>
+        </div>
+
+      </div>
+
+    </div><!-- /content -->
+  </main>
+</div>
+
+<script>
+function setPeriod(btn){
+  document.querySelectorAll('.period-btn').forEach(b => b.classList.remove('sel'));
+  btn.classList.add('sel');
+  const map = {
+    'สัปดาห์นี้': '⏱ 21–26 เม.ย.',
+    'เดือนนี้ (เม.ย. 2026)': '⏱ เมษายน 2026',
+    'ไตรมาส Q2': '⏱ Q2 / 2026',
+    'ปี 2026': '⏱ ปี 2026',
+  };
+  document.getElementById('periodBadge').textContent = map[btn.textContent] || btn.textContent;
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,1369 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PowerTrack — ระบบบันทึกเวลา วิศวกรไฟฟ้า UPS</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --navy:    #0B1120;
+  --navy-2:  #131D30;
+  --navy-3:  #1C2B44;
+  --navy-4:  #243352;
+  --amber:   #F59E0B;
+  --amber-d: #D97706;
+  --amber-l: #FEF3C7;
+  --sky:     #38BDF8;
+  --teal:    #2DD4BF;
+  --rose:    #FB7185;
+  --violet:  #A78BFA;
+  --slate:   #64748B;
+  --line:    #E2E8F0;
+  --bg:      #F0F4F8;
+  --white:   #FFFFFF;
+}
+
+body {
+  font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+  background: var(--bg);
+  color: #1E293B;
+  height: 100vh;
+  overflow: hidden;
+  font-size: 13px;
+}
+
+/* ── LAYOUT ── */
+.shell { display: flex; height: 100vh; }
+
+/* ── SIDEBAR ── */
+.sidebar {
+  width: 210px;
+  min-width: 210px;
+  background: var(--navy);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.sb-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 18px 16px 14px;
+  border-bottom: 1px solid var(--navy-3);
+}
+.sb-logo {
+  width: 32px; height: 32px;
+  background: var(--amber);
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 17px;
+}
+.sb-name { font-size: 14px; font-weight: 800; color: var(--white); letter-spacing: -.3px; }
+.sb-sub  { font-size: 10px; color: #4B6280; margin-top: 1px; }
+
+.sb-section {
+  padding: 14px 12px 6px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .1em;
+  color: #3D5470;
+  text-transform: uppercase;
+}
+
+.sb-nav-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 9px 12px;
+  border-radius: 8px;
+  margin: 1px 8px;
+  cursor: pointer;
+  color: #607A99;
+  font-size: 13px;
+  font-weight: 500;
+  transition: all .15s;
+  border: none; background: none; width: calc(100% - 16px); text-align: left;
+  text-decoration: none;
+}
+.sb-nav-item:hover { background: var(--navy-3); color: #9BB4D4; }
+.sb-nav-item.active { background: var(--navy-3); color: var(--amber); }
+.sb-nav-item .nav-ico { font-size: 15px; width: 20px; text-align: center; }
+
+.sb-divider { border: none; border-top: 1px solid var(--navy-3); margin: 10px 16px; }
+
+/* Date block in sidebar */
+.sb-date-block {
+  margin: 10px 12px 0;
+  background: var(--navy-3);
+  border-radius: 10px;
+  padding: 14px;
+}
+.sb-date-label {
+  font-size: 11px;
+  color: #4B6280;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+}
+.sb-date-val {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--amber);
+  margin-top: 4px;
+}
+.sb-hours-val {
+  font-size: 32px;
+  font-weight: 800;
+  color: var(--white);
+  line-height: 1.1;
+  margin-top: 4px;
+}
+.sb-hours-unit { font-size: 11px; color: #4B6280; margin-top: 2px; }
+
+.btn-log {
+  margin: 14px 12px 0;
+  padding: 11px;
+  background: var(--amber);
+  border: none; border-radius: 10px;
+  color: var(--navy);
+  font-size: 13px; font-weight: 800;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center; gap: 7px;
+  transition: all .15s;
+  letter-spacing: -.2px;
+}
+.btn-log:hover { background: var(--amber-d); transform: translateY(-1px); box-shadow: 0 4px 14px rgba(245,158,11,.35); }
+
+/* User at bottom */
+.sb-user {
+  margin-top: auto;
+  padding: 12px 12px 16px;
+  display: flex; align-items: center; gap: 10px;
+  border-top: 1px solid var(--navy-3);
+}
+.sb-avatar {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  background: var(--navy-4);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px; flex-shrink: 0;
+}
+.sb-user-name { font-size: 12px; font-weight: 700; color: #9BB4D4; }
+.sb-user-role { font-size: 10px; color: #4B6280; }
+
+/* ── CALENDAR AREA ── */
+.cal-area { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+
+.cal-topbar {
+  background: var(--navy);
+  padding: 12px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+}
+.cal-month { font-size: 16px; font-weight: 700; color: var(--white); }
+.cal-year  { font-size: 16px; font-weight: 400; color: #4B6280; margin-left: 6px; }
+.cal-nav   { display: flex; gap: 6px; }
+.cal-btn {
+  width: 28px; height: 28px;
+  border: 1px solid var(--navy-4);
+  border-radius: 6px;
+  background: var(--navy-3);
+  color: #607A99; cursor: pointer;
+  font-size: 14px;
+  display: flex; align-items: center; justify-content: center;
+  transition: all .15s;
+}
+.cal-btn:hover { background: var(--navy-4); color: var(--amber); border-color: var(--amber); }
+
+/* Legend */
+.cal-legend {
+  background: var(--navy-2);
+  padding: 6px 20px;
+  display: flex; align-items: center; gap: 16px;
+  flex-shrink: 0;
+}
+.leg-item { display: flex; align-items: center; gap: 5px; }
+.leg-dot {
+  width: 8px; height: 8px;
+  border-radius: 2px;
+}
+.leg-dot.burn  { background: var(--amber); }
+.leg-dot.load  { background: var(--sky); }
+.leg-dot.prod  { background: var(--teal); }
+.leg-dot.design{ background: var(--violet); }
+.leg-dot.leave { background: var(--rose); }
+.leg-txt { font-size: 10px; color: #4B6280; font-weight: 500; }
+
+.cal-grid-wrap { flex: 1; overflow-y: auto; background: var(--bg); }
+
+.cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  border-top: 2px solid var(--navy);
+}
+
+.day-hdr {
+  padding: 7px 0;
+  text-align: center;
+  font-size: 10px; font-weight: 700;
+  color: #94A3B8;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  border-bottom: 1px solid var(--line);
+  background: var(--white);
+  border-right: 1px solid var(--line);
+}
+
+.day-cell {
+  min-height: 110px;
+  border-right: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  padding: 6px 8px 18px;
+  position: relative;
+  cursor: pointer;
+  transition: background .12s;
+  display: flex; flex-direction: column; gap: 3px;
+  background: var(--white);
+}
+.day-cell:hover { background: #F5F7FA; }
+.day-cell.weekend { background: #F8FAFC; }
+.day-cell.weekend:hover { background: #EFF2F7; }
+.day-cell.overflow { background: #FAFBFC; }
+.day-cell.overflow .day-num-wrap { opacity: .35; }
+.day-cell.today-cell { background: #FFFBEB; }
+.day-cell.sel { background: #FFFBEB; outline: 2px solid var(--amber); outline-offset: -2px; }
+
+.day-num-wrap { display: flex; align-items: center; gap: 6px; }
+.day-num {
+  font-size: 13px; font-weight: 700;
+  color: #334155;
+  width: 24px; height: 24px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 6px;
+  flex-shrink: 0;
+}
+.day-num.is-today { background: var(--amber); color: var(--navy); }
+
+.hol-lbl {
+  font-size: 9px; color: #94A3B8;
+  line-height: 1.3; flex: 1;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
+.ev-tag {
+  display: flex; align-items: center; gap: 4px;
+  border-radius: 3px;
+  padding: 2px 6px;
+  font-size: 10px; font-weight: 600;
+  flex-shrink: 0;
+}
+.ev-tag.burn   { background: #FEF3C7; color: #B45309; border-left: 2px solid var(--amber); }
+.ev-tag.load   { background: #E0F2FE; color: #0369A1; border-left: 2px solid var(--sky); }
+.ev-tag.prod   { background: #CCFBF1; color: #0F766E; border-left: 2px solid var(--teal); }
+.ev-tag.design { background: #EDE9FE; color: #6D28D9; border-left: 2px solid var(--violet); }
+.ev-tag.leave  { background: #FEE2E2; color: #BE123C; border-left: 2px solid var(--rose); }
+.ev-tag .dot { width: 5px; height: 5px; border-radius: 50%; background: currentColor; flex-shrink: 0; }
+
+.day-total-lbl {
+  position: absolute;
+  bottom: 4px; right: 7px;
+  font-size: 10px; font-weight: 700;
+  color: #94A3B8;
+}
+
+/* ── MODAL ── */
+.overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,.55);
+  backdrop-filter: blur(2px);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 100;
+  opacity: 0; pointer-events: none;
+  transition: opacity .2s;
+}
+.overlay.open { opacity: 1; pointer-events: all; }
+
+.modal {
+  background: var(--white);
+  border-radius: 14px;
+  width: 92vw; max-width: 1060px;
+  height: 84vh;
+  display: flex; flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 32px 80px rgba(0,0,0,.3);
+  transform: translateY(20px) scale(.97);
+  transition: transform .22s cubic-bezier(.2,1,.4,1);
+}
+.overlay.open .modal { transform: translateY(0) scale(1); }
+
+/* Modal top bar */
+.modal-bar {
+  background: var(--navy);
+  padding: 0 20px;
+  display: flex; align-items: center; justify-content: space-between;
+  height: 52px;
+  flex-shrink: 0;
+}
+.modal-title { font-size: 15px; font-weight: 700; color: var(--white); display:flex; align-items:center; gap:8px; }
+.modal-title .m-tag {
+  font-size: 10px; font-weight: 600;
+  background: var(--navy-4); color: var(--amber);
+  padding: 2px 8px; border-radius: 20px;
+}
+.btn-x {
+  width: 30px; height: 30px;
+  background: var(--navy-3); border: none;
+  border-radius: 7px; cursor: pointer;
+  color: #607A99; font-size: 16px;
+  display: flex; align-items: center; justify-content: center;
+  transition: all .15s;
+}
+.btn-x:hover { background: var(--navy-4); color: var(--white); }
+
+/* Tabs */
+.modal-tabs {
+  display: flex;
+  border-bottom: 1px solid var(--line);
+  padding: 0 20px;
+  background: var(--white);
+  flex-shrink: 0;
+}
+.tab-btn {
+  padding: 13px 18px;
+  font-size: 13px; font-weight: 600;
+  color: var(--slate); cursor: pointer;
+  border: none; background: none;
+  border-bottom: 2px solid transparent;
+  transition: all .15s; margin-bottom: -1px;
+  display: flex; align-items: center; gap: 6px;
+}
+.tab-btn:hover { color: #1E293B; }
+.tab-btn.a-ups  { color: var(--amber);  border-color: var(--amber); }
+.tab-btn.a-sup  { color: var(--sky);    border-color: var(--sky); }
+.tab-btn.a-test { color: var(--teal);   border-color: var(--teal); }
+.tab-btn.a-leave{ color: var(--rose);   border-color: var(--rose); }
+
+/* Modal body */
+.modal-body {
+  display: flex; flex: 1; overflow: hidden;
+  padding: 18px 20px 16px;
+  gap: 18px;
+}
+
+.tab-pane {
+  flex: 1; overflow-y: auto;
+  display: none; flex-direction: column; gap: 14px;
+}
+.tab-pane.active { display: flex; }
+
+/* Section label */
+.sec-lbl {
+  font-size: 11px; font-weight: 700;
+  color: var(--slate);
+  text-transform: uppercase; letter-spacing: .07em;
+}
+
+/* Search */
+.search-row {
+  display: flex; gap: 8px;
+}
+.search-box {
+  flex: 1;
+  display: flex; align-items: center; gap: 8px;
+  border: 1.5px solid var(--line);
+  border-radius: 8px;
+  padding: 9px 12px;
+  background: var(--bg);
+}
+.search-box:focus-within { border-color: var(--amber); background: var(--white); }
+.search-box input {
+  flex: 1; border: none; background: none;
+  font-size: 13px; color: #1E293B; outline: none;
+}
+.search-box input::placeholder { color: #94A3B8; }
+.search-ico { color: #94A3B8; }
+
+/* Stage grid */
+.stage-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.stage-card {
+  border: 1.5px solid var(--line);
+  border-left: 4px solid var(--line);
+  border-radius: 8px;
+  padding: 12px;
+  cursor: pointer;
+  transition: all .15s;
+  background: var(--white);
+}
+.stage-card:hover { border-color: #CBD5E1; border-left-color: var(--amber); background: var(--bg); }
+.stage-card.sel   { border-color: var(--line); border-left-color: var(--amber); background: var(--amber-l); }
+
+.sc-hdr { display: flex; align-items: center; gap: 8px; margin-bottom: 9px; }
+.sc-ico { font-size: 18px; }
+.sc-label { font-size: 12px; font-weight: 800; color: #1E293B; line-height: 1.3; }
+.sc-sub   { font-size: 10px; color: var(--slate); font-weight: 500; }
+.sc-acts  { list-style: none; display: flex; flex-direction: column; gap: 4px; }
+.sc-acts li {
+  font-size: 11px; color: #475569;
+  padding: 2px 0 2px 10px;
+  position: relative; line-height: 1.4;
+}
+.sc-acts li::before {
+  content: '';
+  position: absolute; left: 0; top: 7px;
+  width: 4px; height: 4px;
+  border-radius: 50%; background: #CBD5E1;
+}
+
+/* Time entry */
+.time-block {
+  border: 1.5px dashed var(--amber);
+  border-radius: 8px; padding: 14px;
+  background: var(--amber-l);
+  display: none; flex-direction: column; gap: 12px;
+}
+.time-block.show { display: flex; animation: fadeUp .2s ease; }
+@keyframes fadeUp { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:none; } }
+.time-block-title {
+  font-size: 12px; font-weight: 800;
+  color: var(--amber-d);
+  display: flex; align-items: center; gap: 6px;
+}
+
+/* Support tab — work type */
+.wt-row {
+  display: flex; align-items: center;
+  border: 1.5px solid var(--line);
+  border-radius: 8px; overflow: hidden;
+  background: var(--white);
+}
+.wt-arr {
+  width: 36px; height: 44px;
+  border: none; background: var(--bg);
+  cursor: pointer; color: var(--slate);
+  font-size: 15px;
+  display: flex; align-items: center; justify-content: center;
+  transition: all .15s; flex-shrink: 0;
+}
+.wt-arr:hover { background: var(--line); }
+.wt-body {
+  flex: 1; padding: 10px 12px;
+  display: flex; align-items: center; gap: 10px;
+}
+.wt-ico-wrap {
+  width: 30px; height: 30px;
+  background: var(--navy-3);
+  border-radius: 7px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 15px; flex-shrink: 0;
+}
+.wt-lbl { font-size: 13px; font-weight: 700; color: #1E293B; }
+.wt-sublbl { font-size: 10px; color: var(--slate); }
+
+/* Select dropdown */
+.sel-field {
+  position: relative;
+}
+.sel-trigger {
+  display: flex; align-items: center; gap: 8px;
+  border: 1.5px solid var(--line);
+  border-radius: 8px; padding: 9px 12px;
+  background: var(--white); cursor: pointer;
+  transition: border .15s;
+}
+.sel-trigger:hover { border-color: #CBD5E1; }
+.sel-trigger.has-val { border-color: var(--amber); background: var(--amber-l); }
+.sel-trigger .sv { flex: 1; font-size: 13px; font-weight: 600; color: #1E293B; }
+.sel-trigger .sv.placeholder { color: #94A3B8; font-weight: 400; }
+.btn-clr {
+  background: none; border: none; cursor: pointer;
+  color: #94A3B8; font-size: 14px; padding: 0 2px;
+  line-height: 1;
+}
+.btn-clr:hover { color: var(--slate); }
+.sel-dropdown {
+  position: absolute; top: calc(100% + 5px); left: 0; right: 0;
+  background: var(--white);
+  border: 1.5px solid var(--line);
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0,0,0,.1);
+  z-index: 20; display: none;
+}
+.sel-dropdown.open { display: block; }
+.sel-opt {
+  padding: 9px 12px;
+  font-size: 12px; color: #334155;
+  cursor: pointer; transition: background .1s;
+}
+.sel-opt:hover { background: var(--amber-l); color: var(--amber-d); }
+
+/* Date/time fields */
+.fields-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 10px;
+}
+.fg { display: flex; flex-direction: column; gap: 5px; }
+.fg label {
+  font-size: 10px; font-weight: 700;
+  color: var(--slate);
+  text-transform: uppercase; letter-spacing: .06em;
+}
+.fi {
+  padding: 9px 10px;
+  border: 1.5px solid var(--line);
+  border-radius: 7px;
+  font-size: 13px; color: #1E293B;
+  background: var(--white); outline: none;
+  transition: border .15s; font-family: inherit;
+}
+.fi:focus { border-color: var(--amber); background: var(--amber-l); }
+
+/* Chips */
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip {
+  padding: 5px 12px;
+  border: 1.5px solid var(--line);
+  border-radius: 20px;
+  font-size: 11px; font-weight: 700;
+  color: var(--slate); cursor: pointer;
+  background: var(--white); transition: all .15s;
+  user-select: none;
+}
+.chip:hover { border-color: var(--amber); color: var(--amber-d); background: var(--amber-l); }
+.chip.sel   { background: var(--amber); border-color: var(--amber); color: var(--navy); }
+
+/* Description */
+.desc { width: 100%; padding: 9px 10px; border: 1.5px solid var(--line); border-radius: 7px; font-size: 13px; color: #1E293B; resize: none; height: 80px; outline: none; font-family: inherit; transition: border .15s; }
+.desc:focus { border-color: var(--amber); }
+
+/* Tab footer */
+.tab-foot {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-top: auto; padding-top: 12px;
+  border-top: 1px solid var(--line); flex-shrink: 0;
+}
+.btn-del {
+  display: flex; align-items: center; gap: 5px;
+  color: #94A3B8; font-size: 12px; font-weight: 600;
+  background: none; border: none; cursor: pointer;
+  padding: 7px 10px; border-radius: 7px; transition: all .15s;
+}
+.btn-del:hover { color: #EF4444; background: #FEF2F2; }
+.btn-stage {
+  padding: 9px 18px;
+  background: var(--navy);
+  border: none; border-radius: 8px;
+  color: var(--amber); font-size: 12px; font-weight: 800;
+  cursor: pointer; transition: all .15s;
+  letter-spacing: -.2px;
+}
+.btn-stage:hover { background: var(--navy-3); }
+
+/* Placeholder pane */
+.tab-ph {
+  flex: 1; display: none;
+  flex-direction: column; align-items: center; justify-content: center;
+  gap: 10px; color: #CBD5E1; text-align: center;
+}
+.tab-ph.active { display: flex; }
+.tab-ph .ph-ico { font-size: 40px; }
+.tab-ph .ph-lbl { font-size: 14px; font-weight: 700; }
+.tab-ph .ph-sub { font-size: 11px; color: #E2E8F0; }
+
+/* ── STAGING PANEL ── */
+.stg-panel {
+  width: 260px; min-width: 260px;
+  display: flex; flex-direction: column;
+  background: var(--bg);
+  border-radius: 10px;
+  padding: 14px;
+  gap: 10px;
+}
+.stg-head { font-size: 12px; font-weight: 800; color: #1E293B; border-bottom: 1px solid var(--line); padding-bottom: 10px; }
+
+.stg-empty {
+  flex: 1; display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  text-align: center; gap: 8px; padding: 16px;
+}
+.stg-empty .se-ico { font-size: 32px; opacity: .3; }
+.stg-empty .se-t { font-size: 12px; font-weight: 700; color: #CBD5E1; }
+.stg-empty .se-s { font-size: 11px; color: #E2E8F0; line-height: 1.6; }
+
+.stg-grp-hdr { display: flex; align-items: center; justify-content: space-between; }
+.grp-badge {
+  font-size: 10px; font-weight: 800;
+  padding: 3px 10px; border-radius: 20px;
+  color: var(--white);
+}
+.gb-amber  { background: var(--amber-d); }
+.gb-sky    { background: #0284C7; }
+.gb-teal   { background: #0F766E; }
+
+.btn-add {
+  display: flex; align-items: center; gap: 4px;
+  font-size: 11px; font-weight: 700;
+  color: var(--amber-d);
+  background: none; border: none; cursor: pointer;
+  padding: 4px 8px; border-radius: 6px; transition: background .15s;
+}
+.btn-add:hover { background: var(--amber-l); }
+
+.stg-list { flex: 1; display: flex; flex-direction: column; gap: 7px; overflow-y: auto; }
+
+.stg-item {
+  display: flex; align-items: center; gap: 9px;
+  background: var(--white);
+  border: 1.5px solid var(--line);
+  border-radius: 8px;
+  padding: 9px 10px;
+  cursor: pointer; transition: all .15s;
+}
+.stg-item:hover { border-color: var(--amber); }
+.stg-item.active { border-color: var(--amber); background: var(--amber-l); }
+.si-ico {
+  width: 26px; height: 26px;
+  background: var(--navy); border-radius: 6px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; flex-shrink: 0;
+}
+.si-info { flex: 1; min-width: 0; }
+.si-name { font-size: 11px; font-weight: 700; color: #1E293B; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.si-date { font-size: 10px; color: var(--slate); margin-top: 1px; }
+.si-dur  { font-size: 12px; font-weight: 800; color: #1E293B; flex-shrink: 0; }
+.si-edit {
+  width: 22px; height: 22px; border-radius: 5px;
+  background: var(--bg); border: none; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 10px; color: var(--slate); transition: all .15s;
+}
+.si-edit:hover { background: var(--line); }
+
+.btn-save-final {
+  padding: 12px;
+  background: var(--amber);
+  border: none; border-radius: 9px;
+  font-size: 13px; font-weight: 800;
+  color: var(--navy); cursor: pointer;
+  transition: all .15s; flex-shrink: 0;
+  letter-spacing: -.2px;
+}
+.btn-save-final:hover:not(:disabled) {
+  background: var(--amber-d);
+  color: var(--white);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(245,158,11,.35);
+}
+.btn-save-final:disabled { background: var(--line); color: #94A3B8; cursor: not-allowed; }
+
+/* ── TOAST ── */
+.toast {
+  position: fixed; bottom: 24px; left: 50%;
+  transform: translateX(-50%) translateY(12px);
+  background: var(--navy); color: var(--white);
+  padding: 10px 20px; border-radius: 8px;
+  font-size: 13px; font-weight: 600;
+  border-left: 3px solid var(--amber);
+  opacity: 0; pointer-events: none; transition: all .22s; z-index: 200;
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 2px; }
+</style>
+</head>
+<body>
+
+<div class="shell">
+
+  <!-- ── SIDEBAR ── -->
+  <aside class="sidebar">
+    <div class="sb-brand">
+      <div class="sb-logo">⚡</div>
+      <div>
+        <div class="sb-name">PowerTrack</div>
+        <div class="sb-sub">UPS Engineering</div>
+      </div>
+    </div>
+
+    <div class="sb-section">เมนูหลัก</div>
+    <a href="prototype.html"  class="sb-nav-item active"><span class="nav-ico">📅</span> ปฏิทินเวลางาน</a>
+    <a href="dashboard.html" class="sb-nav-item"><span class="nav-ico">📊</span> รายงานของฉัน</a>
+    <a href="projects.html"  class="sb-nav-item"><span class="nav-ico">🔋</span> โครงการ UPS</a>
+    <a href="#"              class="sb-nav-item"><span class="nav-ico">⚙️</span> ตั้งค่า</a>
+
+    <hr class="sb-divider">
+
+    <div class="sb-date-block">
+      <div class="sb-date-label">วันที่เลือก</div>
+      <div class="sb-date-val" id="sbDate">26-APR-2026</div>
+      <div class="sb-hours-val" id="sbHours">0h</div>
+      <div class="sb-hours-unit">ชั่วโมงรวมของวัน</div>
+    </div>
+
+    <button class="btn-log" onclick="openModal()">
+      ⚡ บันทึกเวลางาน
+    </button>
+
+    <div class="sb-user">
+      <div class="sb-avatar">👷</div>
+      <div>
+        <div class="sb-user-name">วิศวกรไฟฟ้า</div>
+        <div class="sb-user-role">Power Electronics Team</div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ── CALENDAR ── -->
+  <main class="cal-area">
+    <div class="cal-topbar">
+      <div>
+        <span class="cal-month" id="calMonth">เมษายน</span>
+        <span class="cal-year"  id="calYear">2026</span>
+      </div>
+      <div class="cal-nav">
+        <button class="cal-btn" onclick="prevMonth()">‹</button>
+        <button class="cal-btn" onclick="nextMonth()">›</button>
+      </div>
+    </div>
+    <div class="cal-legend">
+      <div class="leg-item"><div class="leg-dot burn"></div><span class="leg-txt">Burn-in Test</span></div>
+      <div class="leg-item"><div class="leg-dot load"></div><span class="leg-txt">Load / Efficiency Test</span></div>
+      <div class="leg-item"><div class="leg-dot prod"></div><span class="leg-txt">สายการผลิต</span></div>
+      <div class="leg-item"><div class="leg-dot design"></div><span class="leg-txt">Design Review / EMC</span></div>
+      <div class="leg-item"><div class="leg-dot leave"></div><span class="leg-txt">การลา</span></div>
+    </div>
+    <div class="cal-grid-wrap">
+      <div class="cal-grid" id="calGrid"></div>
+    </div>
+  </main>
+</div>
+
+<!-- ── MODAL ── -->
+<div class="overlay" id="overlay" onclick="handleOvClick(event)">
+  <div class="modal">
+
+    <div class="modal-bar">
+      <div class="modal-title">
+        ⚡ บันทึกเวลางาน
+        <span class="m-tag" id="modeTag">ใหม่</span>
+      </div>
+      <button class="btn-x" onclick="closeModal()">✕</button>
+    </div>
+
+    <div class="modal-tabs">
+      <button class="tab-btn a-ups"  id="ttab-ups"   onclick="switchTab('ups')">🔋 โครงการ UPS</button>
+      <button class="tab-btn"        id="ttab-sup"   onclick="switchTab('sup')">🛠️ งานสนับสนุน</button>
+      <button class="tab-btn"        id="ttab-test"  onclick="switchTab('test')">🔬 การทดสอบ</button>
+      <button class="tab-btn"        id="ttab-leave" onclick="switchTab('leave')">📋 การลา</button>
+    </div>
+
+    <div class="modal-body">
+
+      <!-- ── UPS PROJECT TAB ── -->
+      <div class="tab-pane active" id="pane-ups">
+        <div class="sec-lbl">เลือกโครงการ UPS</div>
+        <div class="search-row">
+          <div class="search-box">
+            <span class="search-ico">🔍</span>
+            <input type="text" placeholder="ค้นหาโครงการ..." oninput="filterCards()">
+          </div>
+        </div>
+
+        <div class="sec-lbl">เลือก Stage งาน</div>
+        <div class="stage-grid" id="stageGrid"></div>
+
+        <div class="time-block" id="upsTimeBlock">
+          <div class="time-block-title">⚡ รายละเอียดเวลา — <span id="selStageName"></span></div>
+          <div class="fields-row">
+            <div class="fg"><label>วันที่เริ่ม</label><input type="date" class="fi" id="upsStart"></div>
+            <div class="fg"><label>วันที่สิ้นสุด</label><input type="date" class="fi" id="upsEnd"></div>
+            <div class="fg"><label>เวลาต่อวัน</label><input type="text" class="fi" id="upsSpent" placeholder="เช่น 4h, 8h"></div>
+          </div>
+          <div class="chips" id="upsChips"></div>
+          <div class="fg"><label>หมายเหตุ</label><textarea class="desc" id="upsDesc" placeholder="บันทึกเพิ่มเติม เช่น ผลการทดสอบ, ปัญหาที่พบ..."></textarea></div>
+        </div>
+
+        <div class="tab-foot">
+          <button class="btn-del" onclick="delCurrent()">🗑 ลบรายการ</button>
+          <button class="btn-stage" onclick="saveToList('ups')">+ เพิ่มลงรายการ</button>
+        </div>
+      </div>
+
+      <!-- ── SUPPORT TAB ── -->
+      <div class="tab-pane" id="pane-sup">
+        <div class="sec-lbl">ประเภทงานสนับสนุน</div>
+        <div class="wt-row">
+          <button class="wt-arr" onclick="prevWT()">‹</button>
+          <div class="wt-body">
+            <div class="wt-ico-wrap" id="wtIco">📄</div>
+            <div>
+              <div class="wt-lbl" id="wtName">ทบทวนเอกสาร Spec</div>
+              <div class="wt-sublbl" id="wtSub">Document Review</div>
+            </div>
+          </div>
+          <button class="wt-arr" onclick="nextWT()">›</button>
+        </div>
+
+        <div class="sel-field">
+          <div class="sec-lbl" style="margin-bottom:6px">ทีม / หน่วยงาน</div>
+          <div class="sel-trigger" id="deptTrigger" onclick="toggleDept()">
+            <span class="sv" id="deptVal">— เลือกทีม —</span>
+            <button class="btn-clr" onclick="clearDept(event)">✕</button>
+            <span style="color:var(--slate); font-size:12px">▾</span>
+          </div>
+          <div class="sel-dropdown" id="deptDD">
+            <div class="sel-opt" onclick="pickDept('ทีม Power Electronics')">⚡ ทีม Power Electronics</div>
+            <div class="sel-opt" onclick="pickDept('ทีม Battery & Storage')">🔋 ทีม Battery & Storage</div>
+            <div class="sel-opt" onclick="pickDept('ทีม Control & Firmware')">💻 ทีม Control & Firmware</div>
+            <div class="sel-opt" onclick="pickDept('ทีม Quality & Reliability')">🔬 ทีม Quality & Reliability</div>
+            <div class="sel-opt" onclick="pickDept('ทีม Manufacturing Eng.')">🏭 ทีม Manufacturing Eng.</div>
+          </div>
+        </div>
+
+        <div class="fields-row">
+          <div class="fg"><label>วันที่เริ่ม</label><input type="date" class="fi" id="supStart"></div>
+          <div class="fg"><label>วันที่สิ้นสุด</label><input type="date" class="fi" id="supEnd"></div>
+          <div class="fg"><label>เวลาต่อวัน</label><input type="text" class="fi" id="supSpent" placeholder="เช่น 2h"></div>
+        </div>
+        <div class="chips" id="supChips"></div>
+        <div class="fg"><label>หมายเหตุ</label><textarea class="desc" id="supDesc" placeholder="รายละเอียดงาน..."></textarea></div>
+
+        <div class="tab-foot">
+          <button class="btn-del" onclick="delCurrent()">🗑 ลบรายการ</button>
+          <button class="btn-stage" onclick="saveToList('sup')">+ เพิ่มลงรายการ</button>
+        </div>
+      </div>
+
+      <!-- ── TEST TAB (placeholder) ── -->
+      <div class="tab-ph" id="pane-test">
+        <div class="ph-ico">🔬</div>
+        <div class="ph-lbl">การทดสอบ</div>
+        <div class="ph-sub">Load Test · Efficiency · Burn-in · EMC<br>กำลังพัฒนา</div>
+      </div>
+
+      <!-- ── LEAVE TAB (placeholder) ── -->
+      <div class="tab-ph" id="pane-leave">
+        <div class="ph-ico">📋</div>
+        <div class="ph-lbl">การลา</div>
+        <div class="ph-sub">ลาพักร้อน · ลาป่วย · ลากิจ<br>กำลังพัฒนา</div>
+      </div>
+
+      <!-- ── STAGING PANEL ── -->
+      <div class="stg-panel">
+        <div class="stg-head">📋 รายการที่จะบันทึก</div>
+
+        <div class="stg-empty" id="stgEmpty">
+          <div class="se-ico">🔌</div>
+          <div class="se-t">ยังไม่มีรายการ</div>
+          <div class="se-s">เลือก Stage แล้วกด<br>"เพิ่มลงรายการ"</div>
+        </div>
+
+        <div id="stgContent" style="display:none; flex-direction:column; gap:8px; flex:1; overflow:hidden;">
+          <div class="stg-grp-hdr">
+            <div class="grp-badge gb-amber" id="grpBadge">โครงการ UPS</div>
+            <button class="btn-add" onclick="addNew()">+ เพิ่มใหม่</button>
+          </div>
+          <div class="stg-list" id="stgList"></div>
+        </div>
+
+        <button class="btn-save-final" id="btnFinal" onclick="finalSave()" disabled>
+          ✅ บันทึกทั้งหมด
+        </button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── DATA ──
+
+const MONTH_TH = ['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน',
+                  'กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
+const MONTH_EN = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
+const DAY_LABELS = ['อา','จ','อ','พ','พฤ','ศ','ส'];
+
+const EVENTS = {
+  '2026-03-30': [{t:'burn',  l:'Burn-in 72h: UPS-1000K'}],
+  '2026-03-31': [{t:'burn',  l:'Burn-in 72h: UPS-1000K'}],
+  '2026-04-01': [{t:'burn',  l:'Burn-in 72h: UPS-1000K'}, {t:'load', l:'Load Test: SFF-3kVA'}],
+  '2026-04-02': [{t:'load',  l:'Load Test: SFF-3kVA'}],
+  '2026-04-03': [{t:'prod',  l:'Line Support: A3'}],
+  '2026-04-07': [{t:'leave', l:'ลา'}],
+  '2026-04-08': [{t:'prod',  l:'FAT: SFF-Series'}],
+  '2026-04-09': [{t:'design',l:'Design Review: PFC Stage'}],
+  '2026-04-10': [{t:'prod',  l:'Line Support: A3'}],
+  '2026-04-16': [{t:'leave', l:'ลา'}],
+  '2026-04-17': [{t:'leave', l:'ลา'}],
+  '2026-04-20': [{t:'burn',  l:'Burn-in: UPS-2000K'}],
+  '2026-04-21': [{t:'burn',  l:'Burn-in: UPS-2000K'}],
+  '2026-04-22': [{t:'leave', l:'ลา'}],
+  '2026-04-23': [{t:'load',  l:'Efficiency Test: η≥95%'}],
+  '2026-04-24': [{t:'design',l:'EMC Pre-scan'}],
+};
+
+const DAILY_TOTALS = {
+  '2026-03-30':'8h','2026-03-31':'8h',
+  '2026-04-01':'12h','2026-04-02':'8h','2026-04-03':'8h',
+  '2026-04-08':'8h','2026-04-09':'8h','2026-04-10':'8h',
+  '2026-04-17':'8h',
+  '2026-04-20':'8h','2026-04-21':'8h','2026-04-23':'8h','2026-04-24':'8h',
+};
+
+const HOLIDAYS = {
+  '2026-04-06':'Chakri Memorial Day — วันจักรี',
+  '2026-04-13':'วันสงกรานต์',
+  '2026-04-14':'วันสงกรานต์',
+  '2026-04-15':'วันสงกรานต์',
+  '2026-05-01':'National Labour Day — วันแรงงาน',
+};
+
+const STAGES = [
+  {
+    id:'req', ico:'📋',
+    label:'วิเคราะห์ความต้องการ', sub:'Requirement Analysis',
+    acts:['Customer Requirement Review','Power Spec Analysis','Feasibility Study','Risk Assessment'],
+  },
+  {
+    id:'design', ico:'⚡',
+    label:'ออกแบบไฟฟ้า', sub:'Electrical Design',
+    acts:['Topology Selection','Schematic Design','Component Selection & BOM','Design Review'],
+  },
+  {
+    id:'proto', ico:'🔌',
+    label:'สร้างต้นแบบ', sub:'Prototype Build',
+    acts:['PCB Layout Review','Prototype Assembly','Initial Power-on Test','Issue Log'],
+  },
+  {
+    id:'test', ico:'🔬',
+    label:'ทดสอบและยืนยัน', sub:'Verification & Testing',
+    acts:['Load Test (100/75/25%)','Efficiency & THD','Surge & Short Circuit','Burn-in (72h+)','EMI/EMC Pre-scan'],
+  },
+  {
+    id:'prod', ico:'🏭',
+    label:'สนับสนุนการผลิต', sub:'Production Support',
+    acts:['First Article Inspection','Line Troubleshooting','Process Yield Improvement','Operator Training'],
+  },
+  {
+    id:'cert', ico:'✅',
+    label:'รับรองและส่งมอบ', sub:'Certification & Delivery',
+    acts:['IEC/UL Safety Test','Factory Acceptance Test','Documentation Package','Customer Handover'],
+  },
+];
+
+const WORK_TYPES = [
+  {name:'ทบทวนเอกสาร Spec',         sub:'Document Review',          ico:'📄'},
+  {name:'ประชุมทีม / Design Review', sub:'Team Meeting',              ico:'👥'},
+  {name:'อบรมและพัฒนาทักษะ',         sub:'Training & Development',    ico:'📚'},
+  {name:'วิเคราะห์ความเสียหาย (FA)', sub:'Failure Analysis',          ico:'🔍'},
+  {name:'สนับสนุนทีมอื่น',           sub:'Cross-team Support',        ico:'🤝'},
+];
+
+const TIME_CHIPS = ['30m','1h','2h','4h','6h','8h'];
+
+// ── STATE ──
+
+let curY = 2026, curM = 3;
+let selDate = '2026-04-26';
+let activeTab = 'ups';
+let selStage = null;
+let wtIdx = 0;
+let stgList = [];
+let editId = null;
+let uid = 1;
+let deptOpen = false;
+
+// ── CALENDAR ──
+
+function pad(n){ return String(n).padStart(2,'0'); }
+function dk(y,m,d){ return `${y}-${pad(m+1)}-${pad(d)}`; }
+
+function buildCal(){
+  const grid = document.getElementById('calGrid');
+  grid.innerHTML = '';
+  const today = new Date();
+  const todayKey = dk(today.getFullYear(), today.getMonth(), today.getDate());
+
+  DAY_LABELS.forEach(d => {
+    const el = document.createElement('div');
+    el.className = 'day-hdr';
+    el.textContent = d;
+    grid.appendChild(el);
+  });
+
+  const first = new Date(curY, curM, 1).getDay();
+  const daysInM = new Date(curY, curM+1, 0).getDate();
+  const daysInPrev = new Date(curY, curM, 0).getDate();
+
+  const cells = [];
+  for(let i = first-1; i >= 0; i--){
+    const d = daysInPrev - i;
+    const m = curM === 0 ? 11 : curM-1;
+    const y = curM === 0 ? curY-1 : curY;
+    cells.push({d, m, y, ov:true});
+  }
+  for(let d=1; d<=daysInM; d++) cells.push({d, m:curM, y:curY, ov:false});
+  const rem = 7 - (cells.length % 7);
+  if(rem < 7){
+    for(let d=1; d<=rem; d++){
+      const m = curM === 11 ? 0 : curM+1;
+      const y = curM === 11 ? curY+1 : curY;
+      cells.push({d, m, y, ov:true});
+    }
+  }
+
+  cells.forEach(({d, m, y, ov}) => {
+    const key = dk(y, m, d);
+    const dow = new Date(y, m, d).getDay();
+    const isWE = dow===0||dow===6;
+    const isToday = key===todayKey;
+    const isSel   = key===selDate;
+
+    const cell = document.createElement('div');
+    cell.className = ['day-cell',
+      isWE ? 'weekend' : '',
+      ov   ? 'overflow' : '',
+      isToday && !ov ? 'today-cell' : '',
+      isSel ? 'sel' : '',
+    ].filter(Boolean).join(' ');
+    cell.onclick = () => selectDay(key, d, m, y);
+
+    const numWrap = document.createElement('div');
+    numWrap.className = 'day-num-wrap';
+
+    const numEl = document.createElement('div');
+    numEl.className = 'day-num' + (isToday && !ov ? ' is-today' : '');
+    numEl.textContent = d;
+    numWrap.appendChild(numEl);
+
+    if(HOLIDAYS[key] && !ov){
+      const h = document.createElement('div');
+      h.className = 'hol-lbl';
+      h.textContent = HOLIDAYS[key];
+      numWrap.appendChild(h);
+    }
+    cell.appendChild(numWrap);
+
+    (EVENTS[key]||[]).forEach(ev => {
+      const tag = document.createElement('div');
+      tag.className = 'ev-tag ' + ev.t;
+      tag.innerHTML = `<span class="dot"></span>${ev.l}`;
+      cell.appendChild(tag);
+    });
+
+    if(DAILY_TOTALS[key] && !ov){
+      const tot = document.createElement('div');
+      tot.className = 'day-total-lbl';
+      tot.textContent = DAILY_TOTALS[key];
+      cell.appendChild(tot);
+    }
+    grid.appendChild(cell);
+  });
+
+  document.getElementById('calMonth').textContent = MONTH_TH[curM];
+  document.getElementById('calYear').textContent  = curY;
+}
+
+function selectDay(key, d, m, y){
+  selDate = key;
+  buildCal();
+  document.getElementById('sbDate').textContent = `${pad(d)}-${MONTH_EN[m]}-${y}`;
+  document.getElementById('sbHours').textContent = DAILY_TOTALS[key] || '0h';
+}
+
+function prevMonth(){ curM--; if(curM<0){curM=11;curY--;} buildCal(); }
+function nextMonth(){ curM++; if(curM>11){curM=0;curY++;} buildCal(); }
+
+// ── MODAL ──
+
+function openModal(){
+  buildStageGrid();
+  buildChips('upsChips','ups');
+  buildChips('supChips','sup');
+  ['upsStart','upsEnd','supStart','supEnd'].forEach(id => {
+    document.getElementById(id).value = selDate;
+  });
+  document.getElementById('overlay').classList.add('open');
+  updStg();
+}
+function closeModal(){
+  document.getElementById('overlay').classList.remove('open');
+  closeDept();
+}
+function handleOvClick(e){
+  if(e.target===document.getElementById('overlay')) closeModal();
+}
+
+function switchTab(t){
+  activeTab = t;
+  const map = {ups:'a-ups', sup:'a-sup', test:'a-test', leave:'a-leave'};
+  ['ups','sup','test','leave'].forEach(k => {
+    const btn  = document.getElementById('ttab-'+k);
+    const pane = document.getElementById('pane-'+k);
+    btn.className = 'tab-btn';
+    if(k===t) btn.className += ' '+map[k];
+    if(pane){ pane.classList.remove('active'); if(k===t) pane.classList.add('active'); }
+  });
+  closeDept();
+}
+
+// ── STAGE CARDS ──
+
+function buildStageGrid(){
+  const grid = document.getElementById('stageGrid');
+  grid.innerHTML = '';
+  STAGES.forEach(s => {
+    const c = document.createElement('div');
+    c.className = 'stage-card' + (selStage===s.id ? ' sel' : '');
+    c.onclick = () => pickStage(s.id, s.label);
+    c.innerHTML = `
+      <div class="sc-hdr">
+        <span class="sc-ico">${s.ico}</span>
+        <div>
+          <div class="sc-label">${s.label}</div>
+          <div class="sc-sub">${s.sub}</div>
+        </div>
+      </div>
+      <ul class="sc-acts">${s.acts.map(a=>`<li>${a}</li>`).join('')}</ul>`;
+    grid.appendChild(c);
+  });
+}
+
+function pickStage(id, label){
+  selStage = selStage===id ? null : id;
+  buildStageGrid();
+  const tb = document.getElementById('upsTimeBlock');
+  if(selStage){
+    document.getElementById('selStageName').textContent = label;
+    tb.classList.add('show');
+    tb.scrollIntoView({behavior:'smooth', block:'nearest'});
+  } else {
+    tb.classList.remove('show');
+  }
+}
+
+function filterCards(){
+  const q = event.target.value.toLowerCase();
+  document.querySelectorAll('.stage-card').forEach((c,i) => {
+    const s = STAGES[i];
+    c.style.display = (s.label+s.sub).toLowerCase().includes(q) ? '' : 'none';
+  });
+}
+
+// ── CHIPS ──
+
+function buildChips(cid, tab){
+  const wrap = document.getElementById(cid);
+  wrap.innerHTML = '';
+  TIME_CHIPS.forEach(v => {
+    const b = document.createElement('button');
+    b.className = 'chip';
+    b.textContent = v;
+    b.onclick = () => {
+      wrap.querySelectorAll('.chip').forEach(x => x.classList.remove('sel'));
+      b.classList.add('sel');
+      document.getElementById(tab==='ups' ? 'upsSpent' : 'supSpent').value = v;
+    };
+    wrap.appendChild(b);
+  });
+}
+
+// ── WORK TYPES ──
+
+function renderWT(){
+  const w = WORK_TYPES[wtIdx];
+  document.getElementById('wtIco').textContent = w.ico;
+  document.getElementById('wtName').textContent = w.name;
+  document.getElementById('wtSub').textContent  = w.sub;
+}
+function prevWT(){ wtIdx = (wtIdx-1+WORK_TYPES.length)%WORK_TYPES.length; renderWT(); }
+function nextWT(){ wtIdx = (wtIdx+1)%WORK_TYPES.length; renderWT(); }
+
+// ── DEPT DROPDOWN ──
+
+function toggleDept(){
+  deptOpen = !deptOpen;
+  document.getElementById('deptDD').classList.toggle('open', deptOpen);
+}
+function closeDept(){
+  deptOpen = false;
+  document.getElementById('deptDD').classList.remove('open');
+}
+function pickDept(val){
+  const tr = document.getElementById('deptTrigger');
+  document.getElementById('deptVal').textContent = val;
+  document.getElementById('deptVal').classList.remove('placeholder');
+  tr.classList.add('has-val');
+  closeDept();
+}
+function clearDept(e){
+  e.stopPropagation();
+  const tr = document.getElementById('deptTrigger');
+  document.getElementById('deptVal').textContent = '— เลือกทีม —';
+  document.getElementById('deptVal').classList.add('placeholder');
+  tr.classList.remove('has-val');
+  closeDept();
+}
+
+// ── SAVE TO LIST ──
+
+function fmtD(d){
+  if(!d) return '';
+  const [y,m,day] = d.split('-');
+  return `${day}-${MONTH_EN[parseInt(m)-1]}-${y}`;
+}
+
+function saveToList(tab){
+  if(tab==='ups'){
+    if(!selStage){ toast('⚠ กรุณาเลือก Stage ก่อน'); return; }
+    const st = STAGES.find(s=>s.id===selStage);
+    const s  = document.getElementById('upsStart').value;
+    const e  = document.getElementById('upsEnd').value;
+    const sp = document.getElementById('upsSpent').value;
+    if(!s||!e||!sp){ toast('⚠ กรุณากรอกข้อมูลให้ครบ'); return; }
+    if(e<s){ toast('⚠ วันสิ้นสุดต้องไม่ก่อนวันเริ่มต้น'); return; }
+    pushItem({tab:'ups', ico:st.ico, name:st.label, start:s, end:e, dur:sp});
+  } else {
+    const wt = WORK_TYPES[wtIdx];
+    const s  = document.getElementById('supStart').value;
+    const e  = document.getElementById('supEnd').value;
+    const sp = document.getElementById('supSpent').value;
+    if(!s||!e||!sp){ toast('⚠ กรุณากรอกข้อมูลให้ครบ'); return; }
+    if(e<s){ toast('⚠ วันสิ้นสุดต้องไม่ก่อนวันเริ่มต้น'); return; }
+    pushItem({tab:'sup', ico:wt.ico, name:wt.name, start:s, end:e, dur:sp});
+  }
+}
+
+function pushItem(item){
+  if(editId!==null){
+    const idx = stgList.findIndex(i=>i.id===editId);
+    if(idx!==-1) stgList[idx] = {...item, id:editId};
+    editId = null;
+  } else {
+    stgList.push({...item, id:uid++});
+  }
+  updStg();
+  toast('✅ เพิ่มลงรายการแล้ว');
+}
+
+function delCurrent(){
+  if(editId!==null){
+    stgList = stgList.filter(i=>i.id!==editId);
+    editId = null;
+    updStg();
+    toast('🗑 ลบรายการแล้ว');
+  } else {
+    toast('ไม่มีรายการที่กำลังแก้ไข');
+  }
+}
+
+function addNew(){
+  editId = null;
+  selStage = null;
+  buildStageGrid();
+  document.getElementById('upsTimeBlock').classList.remove('show');
+  buildChips('upsChips','ups');
+  buildChips('supChips','sup');
+  document.getElementById('upsSpent').value = '';
+  document.getElementById('supSpent').value = '';
+}
+
+function editItem(id){
+  editId = id;
+  const item = stgList.find(i=>i.id===id);
+  if(!item) return;
+  switchTab(item.tab);
+  if(item.tab==='ups'){
+    selStage = STAGES.find(s=>s.label===item.name)?.id||null;
+    buildStageGrid();
+    if(selStage){ document.getElementById('selStageName').textContent = item.name; document.getElementById('upsTimeBlock').classList.add('show'); }
+    document.getElementById('upsStart').value = item.start;
+    document.getElementById('upsEnd').value   = item.end;
+    document.getElementById('upsSpent').value = item.dur;
+  } else {
+    wtIdx = WORK_TYPES.findIndex(w=>w.name===item.name);
+    if(wtIdx<0) wtIdx=0;
+    renderWT();
+    document.getElementById('supStart').value = item.start;
+    document.getElementById('supEnd').value   = item.end;
+    document.getElementById('supSpent').value = item.dur;
+  }
+}
+
+// ── STAGING UI ──
+
+function updStg(){
+  const empty   = document.getElementById('stgEmpty');
+  const content = document.getElementById('stgContent');
+  const btn     = document.getElementById('btnFinal');
+  const list    = document.getElementById('stgList');
+  const badge   = document.getElementById('grpBadge');
+
+  if(stgList.length===0){
+    empty.style.display   = 'flex';
+    content.style.display = 'none';
+    btn.disabled = true;
+    return;
+  }
+  empty.style.display   = 'none';
+  content.style.display = 'flex';
+  btn.disabled = false;
+
+  const hasUps = stgList.some(i=>i.tab==='ups');
+  const hasSup = stgList.some(i=>i.tab==='sup');
+  if(hasUps&&!hasSup){ badge.textContent='โครงการ UPS'; badge.className='grp-badge gb-amber'; }
+  else if(hasSup&&!hasUps){ badge.textContent='งานสนับสนุน'; badge.className='grp-badge gb-sky'; }
+  else { badge.textContent='รวมทุกประเภท'; badge.className='grp-badge'; badge.style.background='#6D28D9'; }
+
+  list.innerHTML = '';
+  stgList.forEach(item => {
+    const el = document.createElement('div');
+    el.className = 'stg-item' + (editId===item.id ? ' active' : '');
+    el.onclick = () => editItem(item.id);
+    el.innerHTML = `
+      <div class="si-ico">${item.ico}</div>
+      <div class="si-info">
+        <div class="si-name">${item.name}</div>
+        <div class="si-date">${fmtD(item.start)} → ${fmtD(item.end)}</div>
+      </div>
+      <div class="si-dur">${item.dur}</div>
+      <button class="si-edit" onclick="event.stopPropagation();editItem(${item.id})">✏</button>`;
+    list.appendChild(el);
+  });
+}
+
+function finalSave(){
+  if(!stgList.length) return;
+  toast(`✅ บันทึก ${stgList.length} รายการสำเร็จ`);
+  stgList = []; editId = null; updStg();
+  setTimeout(closeModal, 1200);
+}
+
+// ── TOAST ──
+
+function toast(msg){
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  setTimeout(()=>el.classList.remove('show'), 2200);
+}
+
+// ── INIT ──
+
+buildCal();
+renderWT();
+</script>
+</body>
+</html>

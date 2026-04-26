@@ -1,0 +1,840 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PowerTrack — โครงการ UPS</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --navy:   #0B1120; --navy-2: #131D30;
+  --navy-3: #1C2B44; --navy-4: #243352;
+  --amber:  #F59E0B; --amber-d: #D97706; --amber-l: #FEF3C7;
+  --sky:    #38BDF8; --teal: #2DD4BF;
+  --violet: #A78BFA; --rose: #FB7185;
+  --emerald:#34D399; --slate: #64748B;
+  --line:   #E2E8F0; --bg: #F0F4F8; --white: #fff;
+}
+
+body {
+  font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+  background: var(--bg); color: #1E293B;
+  height: 100vh; overflow: hidden; font-size: 13px;
+}
+
+.shell { display: flex; height: 100vh; }
+
+/* ── SIDEBAR ── */
+.sidebar {
+  width: 210px; min-width: 210px;
+  background: var(--navy);
+  display: flex; flex-direction: column; overflow: hidden;
+}
+.sb-brand { display: flex; align-items: center; gap: 10px; padding: 18px 16px 14px; border-bottom: 1px solid var(--navy-3); }
+.sb-logo  { width: 32px; height: 32px; background: var(--amber); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 17px; }
+.sb-name  { font-size: 14px; font-weight: 800; color: #fff; }
+.sb-sub   { font-size: 10px; color: #4B6280; margin-top: 1px; }
+.sb-sec   { padding: 14px 12px 6px; font-size: 10px; font-weight: 700; letter-spacing: .1em; color: #3D5470; text-transform: uppercase; }
+.sb-nav   {
+  display: flex; align-items: center; gap: 10px;
+  padding: 9px 12px; border-radius: 8px; margin: 1px 8px;
+  cursor: pointer; color: #607A99; font-size: 13px; font-weight: 500;
+  border: none; background: none; width: calc(100% - 16px);
+  text-align: left; text-decoration: none; transition: all .15s;
+}
+.sb-nav:hover { background: var(--navy-3); color: #9BB4D4; }
+.sb-nav.active { background: var(--navy-3); color: var(--amber); }
+.sb-nav .ni { font-size: 15px; width: 20px; text-align: center; }
+.sb-divider { border: none; border-top: 1px solid var(--navy-3); margin: 10px 16px; }
+.sb-user { margin-top: auto; padding: 12px 12px 16px; display: flex; align-items: center; gap: 10px; border-top: 1px solid var(--navy-3); }
+.sb-av   { width: 32px; height: 32px; border-radius: 50%; background: var(--navy-4); display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0; }
+.sb-uname{ font-size: 12px; font-weight: 700; color: #9BB4D4; }
+.sb-urole{ font-size: 10px; color: #4B6280; }
+
+/* ── MAIN ── */
+.main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+
+.topbar {
+  background: var(--navy); padding: 14px 24px;
+  display: flex; align-items: center; justify-content: space-between; flex-shrink: 0;
+}
+.topbar-title { font-size: 16px; font-weight: 700; color: #fff; }
+.topbar-sub   { font-size: 11px; color: #4B6280; margin-top: 2px; }
+.btn-new {
+  background: var(--amber); border: none; border-radius: 8px;
+  padding: 9px 16px; font-size: 12px; font-weight: 800;
+  color: var(--navy); cursor: pointer; transition: all .15s;
+}
+.btn-new:hover { background: var(--amber-d); color: #fff; }
+
+/* Filter bar */
+.filter-bar {
+  background: var(--white); border-bottom: 1px solid var(--line);
+  padding: 0 24px; display: flex; align-items: center;
+  justify-content: space-between; flex-shrink: 0;
+}
+.filter-tabs { display: flex; }
+.ftab {
+  padding: 12px 16px; font-size: 12px; font-weight: 600;
+  color: var(--slate); cursor: pointer; border: none; background: none;
+  border-bottom: 2px solid transparent; margin-bottom: -1px;
+  transition: all .15s; display: flex; align-items: center; gap: 5px;
+}
+.ftab:hover { color: #1E293B; }
+.ftab.sel { color: var(--amber-d); border-color: var(--amber); }
+.ftab-count {
+  background: var(--bg); border-radius: 20px;
+  padding: 1px 7px; font-size: 10px; font-weight: 700;
+}
+.ftab.sel .ftab-count { background: var(--amber-l); color: var(--amber-d); }
+
+.sort-row { display: flex; align-items: center; gap: 8px; }
+.sort-lbl { font-size: 11px; color: var(--slate); }
+.sort-sel {
+  border: 1.5px solid var(--line); border-radius: 7px;
+  padding: 5px 10px; font-size: 12px; font-weight: 600;
+  color: #1E293B; background: var(--bg); cursor: pointer; outline: none;
+}
+
+/* Body: list + detail */
+.proj-body { flex: 1; display: flex; overflow: hidden; }
+
+/* ── LEFT: PROJECT LIST ── */
+.proj-left {
+  flex: 1; display: flex; flex-direction: column;
+  overflow: hidden; border-right: 1px solid var(--line);
+}
+
+/* KPI strip */
+.kpi-strip {
+  display: grid; grid-template-columns: repeat(4, 1fr);
+  gap: 0; border-bottom: 1px solid var(--line);
+  background: var(--white); flex-shrink: 0;
+}
+.ks-item {
+  padding: 12px 16px; border-right: 1px solid var(--line);
+  display: flex; align-items: center; gap: 10px;
+}
+.ks-item:last-child { border-right: none; }
+.ks-ico { font-size: 18px; }
+.ks-val { font-size: 18px; font-weight: 800; color: #0F172A; line-height: 1; }
+.ks-lbl { font-size: 10px; color: var(--slate); margin-top: 2px; }
+
+/* Project list */
+.proj-list {
+  flex: 1; overflow-y: auto;
+  padding: 14px 16px;
+  display: flex; flex-direction: column; gap: 8px;
+}
+
+.proj-row {
+  background: var(--white);
+  border: 1.5px solid var(--line);
+  border-left: 4px solid transparent;
+  border-radius: 10px;
+  padding: 14px 16px;
+  cursor: pointer; transition: all .15s;
+  display: flex; flex-direction: column; gap: 9px;
+}
+.proj-row:hover { border-color: var(--line); border-left-color: inherit; background: #FAFBFC; transform: translateX(2px); }
+.proj-row.sel { background: #FFFBEB !important; border-color: var(--amber) !important; border-left-color: var(--amber) !important; }
+
+.pr-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+.pr-code { font-size: 11px; font-weight: 800; color: var(--slate); letter-spacing: .04em; margin-bottom: 2px; }
+.pr-name { font-size: 14px; font-weight: 700; color: #0F172A; }
+.pr-badges { display: flex; align-items: center; gap: 6px; flex-shrink: 0; flex-wrap: wrap; justify-content: flex-end; }
+
+.badge {
+  font-size: 10px; font-weight: 700;
+  padding: 3px 9px; border-radius: 20px;
+  white-space: nowrap;
+}
+.badge-type-newdev  { background: #FEF3C7; color: #B45309; }
+.badge-type-verif   { background: #CCFBF1; color: #0F766E; }
+.badge-type-cert    { background: #EDE9FE; color: #6D28D9; }
+.badge-type-bau     { background: #E0F2FE; color: #0369A1; }
+.badge-type-rnd     { background: #F0FDF4; color: #15803D; }
+
+.badge-status-design  { background: #DBEAFE; color: #1D4ED8; }
+.badge-status-testing { background: #FEF3C7; color: #B45309; }
+.badge-status-cert    { background: #EDE9FE; color: #6D28D9; }
+.badge-status-ongoing { background: #F1F5F9; color: #475569; }
+.badge-status-done    { background: #DCFCE7; color: #15803D; }
+
+.prio-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; margin-top: 2px; }
+.prio-high  { background: var(--rose); }
+.prio-med   { background: var(--amber); }
+.prio-low   { background: var(--slate); }
+
+.pr-mid { display: flex; align-items: center; gap: 16px; font-size: 11px; color: var(--slate); }
+.pr-spec { display: flex; align-items: center; gap: 4px; }
+.pr-spec-ico { font-size: 12px; }
+
+/* Stage dots */
+.stage-dots { display: flex; align-items: center; gap: 3px; }
+.sd {
+  width: 14px; height: 14px; border-radius: 50%;
+  border: 2px solid var(--line); background: var(--white);
+  position: relative; flex-shrink: 0; transition: all .2s;
+}
+.sd.done   { background: var(--emerald); border-color: var(--emerald); }
+.sd.active { background: var(--amber); border-color: var(--amber); }
+.sd-line { width: 8px; height: 2px; background: var(--line); flex-shrink: 0; }
+.sd-line.done { background: var(--emerald); }
+
+.stage-label { font-size: 10px; color: var(--slate); font-weight: 600; margin-left: 4px; }
+
+/* Budget bar */
+.budget-row { display: flex; align-items: center; gap: 10px; }
+.budget-track {
+  flex: 1; height: 5px; background: var(--bg);
+  border-radius: 3px; overflow: hidden;
+}
+.budget-fill { height: 100%; border-radius: 3px; transition: width .6s; }
+.budget-lbl { font-size: 10px; color: var(--slate); white-space: nowrap; min-width: 80px; text-align: right; }
+
+.pr-bottom { display: flex; align-items: center; justify-content: space-between; }
+.pr-members { display: flex; align-items: center; gap: 4px; }
+.m-av {
+  width: 22px; height: 22px; border-radius: 50%;
+  background: var(--navy); color: var(--amber);
+  font-size: 9px; font-weight: 800;
+  display: flex; align-items: center; justify-content: center;
+  border: 2px solid var(--white); margin-left: -4px;
+}
+.m-av:first-child { margin-left: 0; }
+.m-count { font-size: 10px; color: var(--slate); margin-left: 4px; }
+.pr-date { font-size: 10px; color: var(--slate); }
+
+/* ── RIGHT: DETAIL PANEL ── */
+.proj-detail {
+  width: 380px; min-width: 380px;
+  display: flex; flex-direction: column;
+  overflow: hidden; background: var(--white);
+}
+
+.detail-empty {
+  flex: 1; display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 12px; text-align: center; padding: 32px;
+}
+.de-ico { font-size: 48px; opacity: .2; }
+.de-lbl { font-size: 14px; font-weight: 700; color: #CBD5E1; }
+.de-sub { font-size: 12px; color: #E2E8F0; }
+
+.detail-content { flex: 1; overflow-y: auto; display: none; flex-direction: column; }
+.detail-content.show { display: flex; }
+
+/* Detail header */
+.det-hdr {
+  padding: 18px 20px 14px;
+  border-bottom: 1px solid var(--line);
+  flex-shrink: 0;
+}
+.det-code { font-size: 10px; font-weight: 800; color: var(--slate); letter-spacing: .08em; margin-bottom: 4px; }
+.det-name { font-size: 18px; font-weight: 800; color: #0F172A; line-height: 1.2; margin-bottom: 10px; }
+.det-badges { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; }
+.det-specs { display: flex; gap: 8px; flex-wrap: wrap; }
+.spec-chip {
+  background: var(--bg); border-radius: 6px;
+  padding: 4px 10px; font-size: 11px; font-weight: 600; color: #334155;
+  display: flex; align-items: center; gap: 4px;
+}
+
+/* Time tracker */
+.det-section { padding: 14px 20px; border-bottom: 1px solid var(--line); flex-shrink: 0; }
+.det-sec-title {
+  font-size: 10px; font-weight: 800; color: var(--slate);
+  text-transform: uppercase; letter-spacing: .08em;
+  margin-bottom: 12px; display: flex; align-items: center; gap: 6px;
+}
+.time-tracker-row { display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 8px; }
+.tt-val { font-size: 26px; font-weight: 800; color: #0F172A; line-height: 1; }
+.tt-val span { font-size: 13px; color: var(--slate); font-weight: 500; }
+.tt-pct { font-size: 14px; font-weight: 800; }
+.tt-track { height: 8px; background: var(--bg); border-radius: 4px; overflow: hidden; margin-bottom: 6px; }
+.tt-fill  { height: 100%; border-radius: 4px; transition: width .8s cubic-bezier(.2,1,.4,1); }
+.tt-meta { display: flex; justify-content: space-between; font-size: 10px; color: var(--slate); }
+
+/* Stage stepper */
+.stepper { display: flex; flex-direction: column; }
+.step { display: flex; gap: 12px; }
+.step-line-col { display: flex; flex-direction: column; align-items: center; }
+.step-dot {
+  width: 20px; height: 20px; border-radius: 50%;
+  border: 2px solid var(--line); background: var(--white);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 10px; flex-shrink: 0; position: relative; z-index: 1;
+}
+.step-dot.done   { background: var(--emerald); border-color: var(--emerald); }
+.step-dot.active { background: var(--amber); border-color: var(--amber); animation: pulse 2s infinite; }
+.step-dot.todo   { background: var(--white); border-color: var(--line); }
+@keyframes pulse { 0%,100%{ box-shadow:0 0 0 0 rgba(245,158,11,.4); } 50%{ box-shadow:0 0 0 6px rgba(245,158,11,0); } }
+
+.step-connector { width: 2px; flex: 1; min-height: 6px; }
+.step-connector.done { background: var(--emerald); }
+.step-connector.todo { background: var(--line); }
+
+.step-body { flex: 1; padding-bottom: 12px; }
+.step-name { font-size: 12px; font-weight: 700; color: #1E293B; display: flex; align-items: center; gap: 6px; }
+.step-name.active { color: var(--amber-d); }
+.step-name.done   { color: #1E293B; }
+.step-name.todo   { color: #94A3B8; }
+.step-sub  { font-size: 10px; color: var(--slate); margin-top: 2px; }
+.step-h    { font-size: 11px; font-weight: 700; color: var(--amber-d); margin-top: 1px; }
+.now-badge { font-size: 9px; font-weight: 800; background: var(--amber); color: var(--navy); padding: 1px 6px; border-radius: 4px; }
+
+/* Team section */
+.team-list { display: flex; flex-direction: column; gap: 9px; }
+.team-row { display: flex; align-items: center; gap: 10px; }
+.team-av {
+  width: 28px; height: 28px; border-radius: 8px;
+  background: var(--navy); color: var(--amber);
+  font-size: 11px; font-weight: 800;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.team-info { flex: 1; min-width: 0; }
+.team-name { font-size: 12px; font-weight: 700; color: #1E293B; }
+.team-bar-wrap { display: flex; align-items: center; gap: 6px; margin-top: 3px; }
+.team-bar-track { flex: 1; height: 4px; background: var(--bg); border-radius: 2px; overflow: hidden; }
+.team-bar-fill  { height: 100%; border-radius: 2px; background: var(--amber); }
+.team-h { font-size: 11px; font-weight: 800; color: #1E293B; flex-shrink: 0; min-width: 30px; text-align: right; }
+
+/* Specs table */
+.specs-table { display: flex; flex-direction: column; gap: 0; }
+.spec-row { display: flex; align-items: center; justify-content: space-between; padding: 7px 0; border-bottom: 1px solid var(--bg); }
+.spec-row:last-child { border-bottom: none; }
+.spec-key { font-size: 11px; color: var(--slate); font-weight: 500; }
+.spec-val { font-size: 11px; font-weight: 700; color: #1E293B; text-align: right; max-width: 55%; }
+
+/* Recent logs */
+.log-list { display: flex; flex-direction: column; gap: 8px; }
+.log-item { background: var(--bg); border-radius: 8px; padding: 9px 11px; border-left: 3px solid var(--amber); }
+.log-top  { display: flex; align-items: center; justify-content: space-between; margin-bottom: 3px; }
+.log-who  { font-size: 11px; font-weight: 700; color: #1E293B; }
+.log-date { font-size: 10px; color: var(--slate); }
+.log-act  { font-size: 11px; color: #334155; }
+.log-stage{ font-size: 10px; color: var(--slate); margin-top: 1px; }
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 2px; }
+</style>
+</head>
+<body>
+
+<div class="shell">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sb-brand">
+      <div class="sb-logo">⚡</div>
+      <div><div class="sb-name">PowerTrack</div><div class="sb-sub">UPS Engineering</div></div>
+    </div>
+    <div class="sb-sec">เมนูหลัก</div>
+    <a href="prototype.html"  class="sb-nav"><span class="ni">📅</span> ปฏิทินเวลางาน</a>
+    <a href="dashboard.html"  class="sb-nav"><span class="ni">📊</span> รายงานของฉัน</a>
+    <a href="projects.html"   class="sb-nav active"><span class="ni">🔋</span> โครงการ UPS</a>
+    <a href="#"               class="sb-nav"><span class="ni">⚙️</span> ตั้งค่า</a>
+    <div class="sb-user" style="margin-top:auto">
+      <div class="sb-av">👷</div>
+      <div><div class="sb-uname">ทีมวิศวกรไฟฟ้า</div><div class="sb-urole">Power Electronics</div></div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+
+    <div class="topbar">
+      <div>
+        <div class="topbar-title">🔋 โครงการ UPS</div>
+        <div class="topbar-sub">Power Electronics Engineering — เม.ย. 2026</div>
+      </div>
+      <button class="btn-new">+ โครงการใหม่</button>
+    </div>
+
+    <!-- Filter bar -->
+    <div class="filter-bar">
+      <div class="filter-tabs" id="filterTabs">
+        <button class="ftab sel" onclick="filterProj('all',this)">ทั้งหมด <span class="ftab-count" id="cnt-all">6</span></button>
+        <button class="ftab" onclick="filterProj('new-dev',this)">พัฒนาใหม่ <span class="ftab-count">3</span></button>
+        <button class="ftab" onclick="filterProj('verification',this)">ตรวจสอบ <span class="ftab-count">1</span></button>
+        <button class="ftab" onclick="filterProj('certification',this)">รับรองมาตรฐาน <span class="ftab-count">1</span></button>
+        <button class="ftab" onclick="filterProj('bau',this)">BAU <span class="ftab-count">1</span></button>
+      </div>
+      <div class="sort-row">
+        <span class="sort-lbl">เรียงตาม</span>
+        <select class="sort-sel" onchange="sortProj(this.value)">
+          <option value="priority">Priority</option>
+          <option value="hours">ชั่วโมงสูงสุด</option>
+          <option value="budget">% งบเหลือ</option>
+          <option value="stage">Stage</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Body -->
+    <div class="proj-body">
+
+      <!-- LEFT: LIST -->
+      <div class="proj-left">
+
+        <!-- KPI strip -->
+        <div class="kpi-strip">
+          <div class="ks-item">
+            <div class="ks-ico">🔋</div>
+            <div><div class="ks-val">6</div><div class="ks-lbl">โครงการทั้งหมด</div></div>
+          </div>
+          <div class="ks-item">
+            <div class="ks-ico">⏱</div>
+            <div><div class="ks-val">895h</div><div class="ks-lbl">ชั่วโมงรวม</div></div>
+          </div>
+          <div class="ks-item">
+            <div class="ks-ico">💰</div>
+            <div><div class="ks-val">1,670h</div><div class="ks-lbl">งบรวม (project)</div></div>
+          </div>
+          <div class="ks-item">
+            <div class="ks-ico">📈</div>
+            <div><div class="ks-val" id="avgPct">53%</div><div class="ks-lbl">เฉลี่ยความคืบหน้า</div></div>
+          </div>
+        </div>
+
+        <!-- Project list -->
+        <div class="proj-list" id="projList"></div>
+
+      </div>
+
+      <!-- RIGHT: DETAIL -->
+      <div class="proj-detail">
+
+        <div class="detail-empty" id="detailEmpty">
+          <div class="de-ico">🔌</div>
+          <div class="de-lbl">เลือกโครงการ</div>
+          <div class="de-sub">คลิกโครงการทางซ้ายเพื่อดูรายละเอียด<br>ความคืบหน้า ทีม และ time log</div>
+        </div>
+
+        <div class="detail-content" id="detailContent">
+          <!-- filled by JS -->
+        </div>
+
+      </div>
+    </div>
+  </main>
+</div>
+
+<script>
+// ── DATA ──
+
+const STAGES = [
+  { name:'วิเคราะห์ความต้องการ', sub:'Requirement Analysis' },
+  { name:'ออกแบบไฟฟ้า',         sub:'Electrical Design' },
+  { name:'สร้างต้นแบบ',          sub:'Prototype Build' },
+  { name:'ทดสอบและยืนยัน',       sub:'Verification & Testing' },
+  { name:'สนับสนุนการผลิต',      sub:'Production Support' },
+  { name:'รับรองและส่งมอบ',      sub:'Certification & Delivery' },
+];
+
+const MONTH_EN = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
+function fmtDate(d){
+  const [y,m,day] = d.split('-');
+  return `${day}-${MONTH_EN[parseInt(m)-1]}-${y}`;
+}
+
+const PROJECTS = [
+  {
+    id:1, code:'UPS-1000K', name:'Shutdown SFF Series',
+    type:'new-dev', typeLabel:'พัฒนาใหม่',
+    status:'testing', statusLabel:'กำลังทดสอบ',
+    priority:'high',
+    power:'1 kVA', voltage:'220V / 50Hz', topology:'Double Conversion Online',
+    efficiency:'≥ 95%', standard:'IEC 62040-3',
+    stage:3, stageHours:[18, 65, 55, 107, 0, 0],
+    timeBudget:400, startDate:'2026-01-15', targetDate:'2026-06-30',
+    members:[
+      {name:'ธีรพงษ์', init:'ธ', hours:128},
+      {name:'กัญญา',   init:'ก', hours:44},
+      {name:'จันทิมา', init:'จ', hours:42},
+      {name:'วรวิทย์', init:'ว', hours:31},
+    ],
+    logs:[
+      {date:'2026-04-24', who:'ธีรพงษ์', stage:'ทดสอบและยืนยัน', act:'Load Test 100%/75%/25% Load', h:'8h'},
+      {date:'2026-04-23', who:'จันทิมา', stage:'ทดสอบและยืนยัน', act:'Efficiency Test η=94.8%', h:'6h'},
+      {date:'2026-04-22', who:'ธีรพงษ์', stage:'ทดสอบและยืนยัน', act:'Surge & Short Circuit Test', h:'8h'},
+    ],
+  },
+  {
+    id:2, code:'SFF-3kVA', name:'Load Test & Verification',
+    type:'verification', typeLabel:'ตรวจสอบ',
+    status:'testing', statusLabel:'กำลังทดสอบ',
+    priority:'high',
+    power:'3 kVA', voltage:'220V / 50Hz', topology:'Line Interactive',
+    efficiency:'≥ 93%', standard:'IEC 62040-3',
+    stage:3, stageHours:[12, 40, 48, 80, 0, 0],
+    timeBudget:250, startDate:'2026-02-01', targetDate:'2026-05-15',
+    members:[
+      {name:'สุภาวดี', init:'ส', hours:108},
+      {name:'ณัฐพล',  init:'ณ', hours:45},
+      {name:'จันทิมา',init:'จ', hours:27},
+    ],
+    logs:[
+      {date:'2026-04-24', who:'สุภาวดี', stage:'ทดสอบและยืนยัน', act:'Burn-in Test 72h (เริ่ม)', h:'8h'},
+      {date:'2026-04-23', who:'ณัฐพล',  stage:'ทดสอบและยืนยัน', act:'Firmware Load Control Test', h:'6h'},
+    ],
+  },
+  {
+    id:3, code:'UPS-2000K', name:'New Development 2kVA',
+    type:'new-dev', typeLabel:'พัฒนาใหม่',
+    status:'design', statusLabel:'กำลังออกแบบ',
+    priority:'medium',
+    power:'2 kVA', voltage:'220V / 50Hz', topology:'Double Conversion Online',
+    efficiency:'≥ 96%', standard:'IEC 62040-3, UL 1778',
+    stage:1, stageHours:[22, 138, 0, 0, 0, 0],
+    timeBudget:600, startDate:'2026-03-01', targetDate:'2026-12-31',
+    members:[
+      {name:'สุภาวดี', init:'ส', hours:90},
+      {name:'ธีรพงษ์', init:'ธ', hours:50},
+      {name:'กัญญา',  init:'ก', hours:20},
+    ],
+    logs:[
+      {date:'2026-04-24', who:'สุภาวดี', stage:'ออกแบบไฟฟ้า', act:'PFC Stage Schematic Design', h:'8h'},
+      {date:'2026-04-23', who:'ธีรพงษ์', stage:'ออกแบบไฟฟ้า', act:'DC-DC Converter Topology Selection', h:'4h'},
+    ],
+  },
+  {
+    id:4, code:'EMC-IEC62040', name:'EMC Certification IEC 62040',
+    type:'certification', typeLabel:'รับรองมาตรฐาน',
+    status:'certification', statusLabel:'รับรองมาตรฐาน',
+    priority:'high',
+    power:'—', voltage:'—', topology:'—',
+    efficiency:'—', standard:'IEC 62040-3, CISPR 11',
+    stage:5, stageHours:[8, 0, 0, 42, 35, 10],
+    timeBudget:120, startDate:'2026-02-15', targetDate:'2026-05-30',
+    members:[
+      {name:'จันทิมา', init:'จ', hours:58},
+      {name:'ธีรพงษ์', init:'ธ', hours:37},
+    ],
+    logs:[
+      {date:'2026-04-24', who:'จันทิมา', stage:'รับรองและส่งมอบ', act:'IEC 62040-3 Class 1 Test', h:'8h'},
+      {date:'2026-04-22', who:'ธีรพงษ์', stage:'รับรองและส่งมอบ', act:'EMC Pre-scan Report Preparation', h:'4h'},
+    ],
+  },
+  {
+    id:5, code:'LINE-A3', name:'สายการผลิต A3 BAU Support',
+    type:'bau', typeLabel:'BAU',
+    status:'ongoing', statusLabel:'Ongoing',
+    priority:'medium',
+    power:'—', voltage:'—', topology:'BAU Production',
+    efficiency:'—', standard:'Internal SOP-2024',
+    stage:-1, stageHours:[0,0,0,0,167,0],
+    timeBudget:0, startDate:'2026-01-01', targetDate:'Ongoing',
+    members:[
+      {name:'วรวิทย์', init:'ว', hours:106},
+      {name:'ณัฐพล',  init:'ณ', hours:40},
+      {name:'กัญญา',  init:'ก', hours:21},
+    ],
+    logs:[
+      {date:'2026-04-24', who:'วรวิทย์', stage:'สนับสนุนการผลิต', act:'Troubleshooting: IGBT Overtemp Fault', h:'4h'},
+      {date:'2026-04-23', who:'วรวิทย์', stage:'สนับสนุนการผลิต', act:'First Article Inspection (FAI)', h:'6h'},
+      {date:'2026-04-21', who:'ณัฐพล',  stage:'สนับสนุนการผลิต', act:'Line Yield Improvement Analysis', h:'4h'},
+    ],
+  },
+  {
+    id:6, code:'BMS-REV2', name:'Battery Pack BMS Revision 2',
+    type:'new-dev', typeLabel:'พัฒนาใหม่',
+    status:'design', statusLabel:'กำลังออกแบบ',
+    priority:'low',
+    power:'48V / 100Ah', voltage:'48V DC', topology:'Li-ion BMS Active Balancing',
+    efficiency:'≥ 98%', standard:'IEC 62619, UN 38.3',
+    stage:1, stageHours:[16, 32, 0, 0, 0, 0],
+    timeBudget:300, startDate:'2026-04-01', targetDate:'2026-10-31',
+    members:[
+      {name:'สุภาวดี', init:'ส', hours:34},
+      {name:'ณัฐพล',  init:'ณ', hours:14},
+    ],
+    logs:[
+      {date:'2026-04-21', who:'สุภาวดี', stage:'ออกแบบไฟฟ้า', act:'Cell Balancing Circuit Design', h:'6h'},
+    ],
+  },
+];
+
+// ── CONFIG ──
+
+const TYPE_BORDER = {
+  'new-dev':'#F59E0B', 'verification':'#2DD4BF',
+  'certification':'#A78BFA', 'bau':'#38BDF8', 'rnd':'#34D399',
+};
+const STATUS_CLASS = {
+  'design':'badge-status-design', 'testing':'badge-status-testing',
+  'certification':'badge-status-cert', 'ongoing':'badge-status-ongoing', 'done':'badge-status-done',
+};
+const TYPE_CLASS = {
+  'new-dev':'badge-type-newdev', 'verification':'badge-type-verif',
+  'certification':'badge-type-cert', 'bau':'badge-type-bau', 'rnd':'badge-type-rnd',
+};
+const BUDGET_COLOR = pct => pct < 70 ? '#2DD4BF' : pct < 90 ? '#F59E0B' : '#FB7185';
+
+// ── STATE ──
+
+let curFilter = 'all';
+let curSort   = 'priority';
+let selectedId = null;
+let projData   = [...PROJECTS];
+
+// ── RENDER LIST ──
+
+function totalHours(p){ return p.stageHours.reduce((a,b)=>a+b,0); }
+
+function sortOrder(p){
+  const po = {high:0, medium:1, low:2};
+  if(curSort==='priority') return po[p.priority]||2;
+  if(curSort==='hours')    return -totalHours(p);
+  if(curSort==='budget')   return p.timeBudget>0 ? -(p.timeBudget-totalHours(p)) : 999;
+  if(curSort==='stage')    return -(p.stage+1);
+  return 0;
+}
+
+function renderList(){
+  const list = document.getElementById('projList');
+  list.innerHTML = '';
+
+  const filtered = projData
+    .filter(p => curFilter==='all' || p.type===curFilter)
+    .sort((a,b) => sortOrder(a)-sortOrder(b));
+
+  filtered.forEach(p => {
+    const spent  = totalHours(p);
+    const pct    = p.timeBudget>0 ? Math.round(spent/p.timeBudget*100) : null;
+    const color  = TYPE_BORDER[p.type]||'#CBD5E1';
+    const stagesDone = p.stage; // stages 0..stage-1 done, stage is active
+    const stageProgress = p.stage >= 0 ? Math.round((p.stage/6)*100) : 100;
+
+    const row = document.createElement('div');
+    row.className = 'proj-row' + (selectedId===p.id?' sel':'');
+    row.style.borderLeftColor = color;
+    row.dataset.id = p.id;
+    row.onclick = () => selectProject(p.id);
+
+    // Stage dots
+    let dotsHtml = '';
+    if(p.stage >= 0){
+      for(let i=0; i<6; i++){
+        const cls = i<p.stage ? 'done' : i===p.stage ? 'active' : '';
+        const lineClass = i<p.stage ? 'done' : '';
+        dotsHtml += `<div class="sd ${cls}"></div>`;
+        if(i<5) dotsHtml += `<div class="sd-line ${lineClass}"></div>`;
+      }
+    }
+
+    // Budget bar
+    const budgetHtml = p.timeBudget > 0
+      ? `<div class="budget-row">
+          <div class="budget-track">
+            <div class="budget-fill" style="width:${Math.min(pct,100)}%;background:${BUDGET_COLOR(pct)}"></div>
+          </div>
+          <div class="budget-lbl">${spent}h / ${p.timeBudget}h (${pct}%)</div>
+        </div>`
+      : `<div style="font-size:11px;color:var(--slate);">Ongoing BAU — ${spent}h</div>`;
+
+    // Members avatars
+    let membersHtml = p.members.map(m =>
+      `<div class="m-av" title="${m.name}">${m.init}</div>`
+    ).join('');
+
+    row.innerHTML = `
+      <div class="pr-top">
+        <div>
+          <div class="pr-code">${p.code}</div>
+          <div class="pr-name">${p.name}</div>
+        </div>
+        <div class="pr-badges">
+          <div class="prio-dot prio-${p.priority}"></div>
+          <div class="badge ${TYPE_CLASS[p.type]}">${p.typeLabel}</div>
+          <div class="badge ${STATUS_CLASS[p.status]}">${p.statusLabel}</div>
+        </div>
+      </div>
+      <div class="pr-mid">
+        <div class="pr-spec"><span class="pr-spec-ico">⚡</span>${p.power}</div>
+        <div class="pr-spec"><span class="pr-spec-ico">🔌</span>${p.topology}</div>
+      </div>
+      ${p.stage>=0 ? `
+      <div style="display:flex;align-items:center;gap:6px">
+        <div class="stage-dots">${dotsHtml}</div>
+        <div class="stage-label">Stage ${p.stage+1}/6 — ${STAGES[p.stage].name}</div>
+      </div>` : `<div style="font-size:11px;color:var(--slate)">🏭 BAU — ไม่มี Stage</div>`}
+      ${budgetHtml}
+      <div class="pr-bottom">
+        <div class="pr-members">
+          ${membersHtml}
+          <div class="m-count">${p.members.length} คน</div>
+        </div>
+        <div class="pr-date">🎯 ${p.targetDate==='Ongoing' ? 'Ongoing' : fmtDate(p.targetDate)}</div>
+      </div>`;
+
+    list.appendChild(row);
+  });
+}
+
+// ── SELECT PROJECT ──
+
+function selectProject(id){
+  selectedId = id;
+  renderList();
+
+  const p = PROJECTS.find(x=>x.id===id);
+  if(!p) return;
+
+  document.getElementById('detailEmpty').style.display = 'none';
+  const content = document.getElementById('detailContent');
+  content.classList.add('show');
+
+  const spent = totalHours(p);
+  const pct   = p.timeBudget>0 ? Math.round(spent/p.timeBudget*100) : null;
+  const maxH  = Math.max(...p.members.map(m=>m.hours), 1);
+
+  // Stage stepper
+  let stepperHtml = '';
+  if(p.stage >= 0){
+    STAGES.forEach((s,i) => {
+      const state = i < p.stage ? 'done' : i===p.stage ? 'active' : 'todo';
+      const ico   = state==='done' ? '✓' : state==='active' ? '●' : '';
+      const sh    = p.stageHours[i];
+      const connState = i < p.stage ? 'done' : 'todo';
+      stepperHtml += `
+        <div class="step">
+          <div class="step-line-col">
+            <div class="step-dot ${state}">${ico}</div>
+            ${i<5 ? `<div class="step-connector ${connState}"></div>` : ''}
+          </div>
+          <div class="step-body">
+            <div class="step-name ${state}">
+              ${s.name}
+              ${state==='active' ? '<span class="now-badge">NOW</span>' : ''}
+            </div>
+            <div class="step-sub">${s.sub}</div>
+            ${sh>0 ? `<div class="step-h">${sh}h</div>` : ''}
+          </div>
+        </div>`;
+    });
+  } else {
+    stepperHtml = `<div style="font-size:12px;color:var(--slate);padding:8px 0">BAU — ไม่มี Stage ที่กำหนด</div>`;
+  }
+
+  // Team bars
+  let teamHtml = p.members.map(m => `
+    <div class="team-row">
+      <div class="team-av">${m.init}</div>
+      <div class="team-info">
+        <div class="team-name">${m.name}</div>
+        <div class="team-bar-wrap">
+          <div class="team-bar-track">
+            <div class="team-bar-fill" style="width:${Math.round(m.hours/maxH*100)}%"></div>
+          </div>
+          <div class="team-h">${m.hours}h</div>
+        </div>
+      </div>
+    </div>`).join('');
+
+  // Recent logs
+  let logsHtml = p.logs.map(l => `
+    <div class="log-item">
+      <div class="log-top">
+        <div class="log-who">👷 ${l.who}</div>
+        <div class="log-date">${fmtDate(l.date)} · ${l.h}</div>
+      </div>
+      <div class="log-act">${l.act}</div>
+      <div class="log-stage">${l.stage}</div>
+    </div>`).join('');
+
+  // Budget section
+  const budgetSection = p.timeBudget>0 ? `
+    <div class="det-section">
+      <div class="det-sec-title">⏱ ชั่วโมงและงบประมาณ</div>
+      <div class="time-tracker-row">
+        <div class="tt-val">${spent}<span>h</span></div>
+        <div class="tt-pct" style="color:${BUDGET_COLOR(pct)}">${pct}%</div>
+      </div>
+      <div class="tt-track">
+        <div class="tt-fill" style="width:${Math.min(pct,100)}%;background:${BUDGET_COLOR(pct)}"></div>
+      </div>
+      <div class="tt-meta">
+        <span>ใช้ไป ${spent}h จาก ${p.timeBudget}h</span>
+        <span>เหลือ ${p.timeBudget-spent}h</span>
+      </div>
+    </div>` : `
+    <div class="det-section">
+      <div class="det-sec-title">⏱ ชั่วโมงรวม</div>
+      <div class="tt-val">${spent}<span>h</span></div>
+      <div style="font-size:11px;color:var(--slate);margin-top:4px">BAU — ไม่มีงบตายตัว</div>
+    </div>`;
+
+  content.innerHTML = `
+    <div class="det-hdr">
+      <div class="det-code">${p.code}</div>
+      <div class="det-name">${p.name}</div>
+      <div class="det-badges">
+        <div class="badge ${TYPE_CLASS[p.type]}">${p.typeLabel}</div>
+        <div class="badge ${STATUS_CLASS[p.status]}">${p.statusLabel}</div>
+        <div class="badge" style="background:${p.priority==='high'?'#FEE2E2':p.priority==='medium'?'#FEF3C7':'#F1F5F9'};color:${p.priority==='high'?'#BE123C':p.priority==='medium'?'#B45309':'#475569'}">
+          ${p.priority==='high'?'🔴 High':p.priority==='medium'?'🟡 Medium':'⚪ Low'}
+        </div>
+      </div>
+      <div class="det-specs">
+        ${p.power!=='—'?`<div class="spec-chip">⚡ ${p.power}</div>`:''}
+        ${p.voltage!=='—'?`<div class="spec-chip">🔌 ${p.voltage}</div>`:''}
+        <div class="spec-chip">📐 ${p.topology}</div>
+      </div>
+    </div>
+
+    ${budgetSection}
+
+    <div class="det-section">
+      <div class="det-sec-title">📍 Stage ความคืบหน้า</div>
+      <div class="stepper">${stepperHtml}</div>
+    </div>
+
+    <div class="det-section">
+      <div class="det-sec-title">👥 ทีมและชั่วโมง</div>
+      <div class="team-list">${teamHtml}</div>
+    </div>
+
+    <div class="det-section">
+      <div class="det-sec-title">🔬 ข้อมูลเทคนิค</div>
+      <div class="specs-table">
+        <div class="spec-row"><div class="spec-key">Topology</div><div class="spec-val">${p.topology}</div></div>
+        <div class="spec-row"><div class="spec-key">Efficiency</div><div class="spec-val">${p.efficiency}</div></div>
+        <div class="spec-row"><div class="spec-key">มาตรฐาน</div><div class="spec-val">${p.standard}</div></div>
+        <div class="spec-row"><div class="spec-key">วันเริ่มต้น</div><div class="spec-val">${fmtDate(p.startDate)}</div></div>
+        <div class="spec-row"><div class="spec-key">กำหนดเสร็จ</div><div class="spec-val">${p.targetDate==='Ongoing'?'Ongoing':fmtDate(p.targetDate)}</div></div>
+      </div>
+    </div>
+
+    <div class="det-section" style="border-bottom:none">
+      <div class="det-sec-title">📋 งานล่าสุด</div>
+      <div class="log-list">${logsHtml}</div>
+    </div>`;
+}
+
+// ── FILTER / SORT ──
+
+function filterProj(type, btn){
+  curFilter = type;
+  document.querySelectorAll('.ftab').forEach(t => t.classList.remove('sel'));
+  btn.classList.add('sel');
+  renderList();
+}
+
+function sortProj(val){
+  curSort = val;
+  renderList();
+}
+
+// ── INIT ──
+
+renderList();
+// auto-select first project on load
+selectProject(1);
+</script>
+</body>
+</html>
