@@ -1,15 +1,15 @@
-# Feature Specification: WorkTrack BAU Time Logging (Spent-Time First)
+# Feature Specification: WorkTrack UPS Engineering Time Logging (Spent-Time First)
 
 **Feature Branch**: `001-worktrack-bau-type-first`  
 **Created**: 2026-04-26  
 **Status**: Draft  
-**Input**: User description: "แต่ละคนเข้ามา เลือก project BAU > เลือก type (planning/execution/support/project activities) > กรอกเวลาที่ใช้ (spent) > ส่ง API แจ้งเตือน"
+**Input**: User description: "วิศวกรเข้ามา เลือกโครงการ/ไลน์ผลิต UPS > เลือกกลุ่มงานวิศวกรรม (ออกแบบ/ทดสอบ/ซัพพอร์ตไลน์/กิจกรรมโครงการ) > กรอกเวลาที่ใช้ (spent) > ส่ง API แจ้งเตือน"
 
 ## User Scenarios & Testing *(mandatory)*
 
-### User Story 1 - Log BAU work with Jira-style type-first flow (Priority: P1)
+### User Story 1 - Log UPS engineering work with type-first flow (Priority: P1)
 
-As an engineer, I can create a work log by selecting BAU project, type group, activity, and spent time in minutes/hours so I can report work quickly with the same mental model as Jira.
+As a UPS engineer, I can create a work log by selecting project/production line, engineering work group, activity, and spent time in minutes/hours so I can report work quickly in an operational workflow.
 
 **Why this priority**: This is the core value of the MVP. Without this flow, the system is not usable.
 
@@ -17,7 +17,7 @@ As an engineer, I can create a work log by selecting BAU project, type group, ac
 
 **Acceptance Scenarios**:
 
-1. **Given** a logged-in user with accessible BAU projects, **When** user selects project, type group, activity, work date, spent time, and submits, **Then** system saves one work log successfully.
+1. **Given** a logged-in user with accessible UPS projects/production lines, **When** user selects project, type group, activity, work date, spent time, and submits, **Then** system saves one work log successfully.
 2. **Given** a selected type group, **When** user opens activity dropdown, **Then** system shows only activities mapped to that type group.
 3. **Given** spent time is zero or negative, **When** user submits, **Then** system rejects with a validation error.
 
@@ -67,8 +67,8 @@ As an engineer, I can review my recent logs and correct mistakes within allowed 
 
 ### Functional Requirements
 
-- **FR-001**: System MUST require user to select a BAU project before submission.
-- **FR-002**: System MUST support type groups: `Planning`, `Execution`, `Support`, `Project Activities`.
+- **FR-001**: System MUST require user to select a UPS project or production line before submission.
+- **FR-002**: System MUST support engineering work groups: `Design Engineering`, `Verification & Testing`, `Production Line Support`, `Project Activities`.
 - **FR-003**: System MUST provide dependent activity selection based on selected type group.
 - **FR-004**: System MUST use spent-time input as primary mode (`spent_minutes`), not mandatory start/end period.
 - **FR-005**: System MUST validate `spent_minutes > 0` and enforce configurable max per entry.
@@ -86,11 +86,11 @@ As an engineer, I can review my recent logs and correct mistakes within allowed 
 - **FR-017**: System MUST render at least two visual event categories in calendar cells: work/project events and leave events.
 - **FR-018**: System MUST display daily total hours per day cell and in sidebar for selected day.
 - **FR-019**: System SHOULD render holiday/non-working labels in day cells when holiday data exists.
-- **FR-020**: System MUST provide a `New Work Log` / `Edit Work Log` modal with 4 tabs: `Project / BAU`, `Other Work`, `Activities`, `Leave`.
+- **FR-020**: System MUST provide a `New Work Log` / `Edit Work Log` modal with 4 tabs: `UPS Project / Production Line`, `Factory Engineering Work`, `Testing & Certification`, `Leave`.
 - **FR-021**: Modal MUST support staged multi-entry flow: user adds entries to `Work Log List` first, then commits all entries with final `Save`.
 - **FR-022**: `Save to Work Log List` MUST validate required fields for active tab before staging.
-- **FR-023**: For `Project / BAU` tab, system MUST require project selection and stage selection before staging.
-- **FR-024**: For `Other Work` tab, system MUST support selecting work type and (if configured) business unit before staging.
+- **FR-023**: For `UPS Project / Production Line` tab, system MUST require project/line selection and stage selection before staging.
+- **FR-024**: For `Factory Engineering Work` tab, system MUST support selecting work type and (if configured) plant/site or business unit before staging.
 - **FR-025**: System MUST support `StartDate`, `EndDate`, and `Time Spent (per day)` input for applicable tabs.
 - **FR-026**: System MUST enforce date rule `EndDate >= StartDate`.
 - **FR-027**: System MUST provide quick spent-time chips: `15m`, `30m`, `1h`, `2h`, `3h`, `4h`, where clicking a chip sets spent-time value.
@@ -103,7 +103,7 @@ As an engineer, I can review my recent logs and correct mistakes within allowed 
 
 ### Key Entities *(include if feature involves data)*
 
-- **Project**: BAU project master (`project_id`, `project_code`, `project_name`, `active_flag`).
+- **Project**: UPS program / production line master (`project_id`, `project_code`, `project_name`, `line_or_site`, `active_flag`).
 - **TypeGroup**: Top-level work classification (`type_group_id`, `name`, `active_flag`).
 - **ActivityType**: Activity options mapped to a type group (`activity_type_id`, `type_group_id`, `name`, `active_flag`).
 - **WorkLog**: Main submitted entry (`worklog_id`, `user_id`, `project_id`, `type_group_id`, `activity_type_id`, `work_date`, `spent_minutes`, `description`, `status`, `idempotency_key`, optional `started_at`, audit fields).
@@ -127,7 +127,7 @@ As an engineer, I can review my recent logs and correct mistakes within allowed 
 
 - Existing organization auth and user identity are already available.
 - MVP phase excludes approval workflow.
-- Primary use case is BAU tracking, not payroll/billing.
+- Primary use case is UPS engineering and production-support effort tracking, not payroll/billing.
 - Notification API contract is available and reachable from backend.
 
 ## Out of Scope

@@ -698,7 +698,7 @@ body {
     <div class="sb-section">เมนูหลัก</div>
     <a href="prototype.html"  class="sb-nav-item active"><span class="nav-ico">📅</span> ปฏิทินเวลางาน</a>
     <a href="dashboard.html" class="sb-nav-item"><span class="nav-ico">📊</span> รายงานของฉัน</a>
-    <a href="projects.html"  class="sb-nav-item"><span class="nav-ico">🔋</span> โครงการ UPS</a>
+    <a href="projects.html"  class="sb-nav-item"><span class="nav-ico">🔋</span> โครงการ/ไลน์ผลิต UPS</a>
     <a href="#"              class="sb-nav-item"><span class="nav-ico">⚙️</span> ตั้งค่า</a>
 
     <hr class="sb-divider">
@@ -736,10 +736,10 @@ body {
       </div>
     </div>
     <div class="cal-legend">
-      <div class="leg-item"><div class="leg-dot burn"></div><span class="leg-txt">Burn-in Test</span></div>
-      <div class="leg-item"><div class="leg-dot load"></div><span class="leg-txt">Load / Efficiency Test</span></div>
-      <div class="leg-item"><div class="leg-dot prod"></div><span class="leg-txt">สายการผลิต</span></div>
-      <div class="leg-item"><div class="leg-dot design"></div><span class="leg-txt">Design Review / EMC</span></div>
+      <div class="leg-item"><div class="leg-dot burn"></div><span class="leg-txt">Burn-in / Reliability</span></div>
+      <div class="leg-item"><div class="leg-dot load"></div><span class="leg-txt">Load / Efficiency Validation</span></div>
+      <div class="leg-item"><div class="leg-dot prod"></div><span class="leg-txt">Line Support / FAT</span></div>
+      <div class="leg-item"><div class="leg-dot design"></div><span class="leg-txt">Design Change / EMC</span></div>
       <div class="leg-item"><div class="leg-dot leave"></div><span class="leg-txt">การลา</span></div>
     </div>
     <div class="cal-grid-wrap">
@@ -761,9 +761,9 @@ body {
     </div>
 
     <div class="modal-tabs">
-      <button class="tab-btn a-ups"  id="ttab-ups"   onclick="switchTab('ups')">🔋 โครงการ UPS</button>
-      <button class="tab-btn"        id="ttab-sup"   onclick="switchTab('sup')">🛠️ งานสนับสนุน</button>
-      <button class="tab-btn"        id="ttab-test"  onclick="switchTab('test')">🔬 การทดสอบ</button>
+      <button class="tab-btn a-ups"  id="ttab-ups"   onclick="switchTab('ups')">🔋 โครงการ/ไลน์ผลิต UPS</button>
+      <button class="tab-btn"        id="ttab-sup"   onclick="switchTab('sup')">🛠️ งานวิศวกรรมโรงงาน</button>
+      <button class="tab-btn"        id="ttab-test"  onclick="switchTab('test')">🔬 ทดสอบ/รับรอง</button>
       <button class="tab-btn"        id="ttab-leave" onclick="switchTab('leave')">📋 การลา</button>
     </div>
 
@@ -771,7 +771,7 @@ body {
 
       <!-- ── UPS PROJECT TAB ── -->
       <div class="tab-pane active" id="pane-ups">
-        <div class="sec-lbl">เลือกโครงการ UPS</div>
+        <div class="sec-lbl">เลือกโครงการ/ไลน์ผลิต UPS</div>
         <div class="search-row">
           <div class="search-box">
             <span class="search-ico">🔍</span>
@@ -790,7 +790,7 @@ body {
             <div class="fg"><label>เวลาต่อวัน</label><input type="text" class="fi" id="upsSpent" placeholder="เช่น 4h, 8h"></div>
           </div>
           <div class="chips" id="upsChips"></div>
-          <div class="fg"><label>หมายเหตุ</label><textarea class="desc" id="upsDesc" placeholder="บันทึกเพิ่มเติม เช่น ผลการทดสอบ, ปัญหาที่พบ..."></textarea></div>
+          <div class="fg"><label>หมายเหตุ</label><textarea class="desc" id="upsDesc" placeholder="บันทึกเพิ่มเติม เช่น ผลทดสอบ/รับรอง, ปัญหาที่พบ..."></textarea></div>
         </div>
 
         <div class="tab-foot">
@@ -801,14 +801,14 @@ body {
 
       <!-- ── SUPPORT TAB ── -->
       <div class="tab-pane" id="pane-sup">
-        <div class="sec-lbl">ประเภทงานสนับสนุน</div>
+        <div class="sec-lbl">ประเภทงานวิศวกรรมโรงงาน</div>
         <div class="wt-row">
           <button class="wt-arr" onclick="prevWT()">‹</button>
           <div class="wt-body">
             <div class="wt-ico-wrap" id="wtIco">📄</div>
             <div>
-              <div class="wt-lbl" id="wtName">ทบทวนเอกสาร Spec</div>
-              <div class="wt-sublbl" id="wtSub">Document Review</div>
+              <div class="wt-lbl" id="wtName">ทบทวน BOM/Spec การผลิต</div>
+              <div class="wt-sublbl" id="wtSub">BOM/Spec Review</div>
             </div>
           </div>
           <button class="wt-arr" onclick="nextWT()">›</button>
@@ -847,7 +847,7 @@ body {
       <!-- ── TEST TAB (placeholder) ── -->
       <div class="tab-ph" id="pane-test">
         <div class="ph-ico">🔬</div>
-        <div class="ph-lbl">การทดสอบ</div>
+        <div class="ph-lbl">ทดสอบ/รับรอง</div>
         <div class="ph-sub">Load Test · Efficiency · Burn-in · EMC<br>กำลังพัฒนา</div>
       </div>
 
@@ -870,7 +870,7 @@ body {
 
         <div id="stgContent" style="display:none; flex-direction:column; gap:8px; flex:1; overflow:hidden;">
           <div class="stg-grp-hdr">
-            <div class="grp-badge gb-amber" id="grpBadge">โครงการ UPS</div>
+            <div class="grp-badge gb-amber" id="grpBadge">โครงการ/ไลน์ผลิต UPS</div>
             <button class="btn-add" onclick="addNew()">+ เพิ่มใหม่</button>
           </div>
           <div class="stg-list" id="stgList"></div>
@@ -964,11 +964,11 @@ const STAGES = [
 ];
 
 const WORK_TYPES = [
-  {name:'ทบทวนเอกสาร Spec',         sub:'Document Review',          ico:'📄'},
-  {name:'ประชุมทีม / Design Review', sub:'Team Meeting',              ico:'👥'},
-  {name:'อบรมและพัฒนาทักษะ',         sub:'Training & Development',    ico:'📚'},
-  {name:'วิเคราะห์ความเสียหาย (FA)', sub:'Failure Analysis',          ico:'🔍'},
-  {name:'สนับสนุนทีมอื่น',           sub:'Cross-team Support',        ico:'🤝'},
+  {name:'ทบทวน BOM/Spec การผลิต',         sub:'BOM/Spec Review',             ico:'📄'},
+  {name:'ประชุมแก้ปัญหาหน้างาน (MRB)',      sub:'MRB / Daily Operation Meeting', ico:'👥'},
+  {name:'ตรวจสอบคุณภาพหน้างาน',            sub:'In-process Quality Check',     ico:'🧪'},
+  {name:'วิเคราะห์ความเสียหาย (FA/RCA)',    sub:'Failure Analysis / RCA',       ico:'🔍'},
+  {name:'ซัพพอร์ตทีมผลิต/บริการหลังขาย',    sub:'Production / Service Support', ico:'🤝'},
 ];
 
 const TIME_CHIPS = ['30m','1h','2h','4h','6h','8h'];
@@ -1323,8 +1323,8 @@ function updStg(){
 
   const hasUps = stgList.some(i=>i.tab==='ups');
   const hasSup = stgList.some(i=>i.tab==='sup');
-  if(hasUps&&!hasSup){ badge.textContent='โครงการ UPS'; badge.className='grp-badge gb-amber'; }
-  else if(hasSup&&!hasUps){ badge.textContent='งานสนับสนุน'; badge.className='grp-badge gb-sky'; }
+  if(hasUps&&!hasSup){ badge.textContent='โครงการ/ไลน์ผลิต UPS'; badge.className='grp-badge gb-amber'; }
+  else if(hasSup&&!hasUps){ badge.textContent='งานวิศวกรรมโรงงาน'; badge.className='grp-badge gb-sky'; }
   else { badge.textContent='รวมทุกประเภท'; badge.className='grp-badge'; badge.style.background='#6D28D9'; }
 
   list.innerHTML = '';
